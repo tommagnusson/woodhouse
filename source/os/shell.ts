@@ -24,60 +24,46 @@ module TSOS {
         public apologies = "[sorry]";
 
         constructor() {
-        }
-
-        public init() {
-            var sc;
-            //
-            // Load the command list.
 
             // ver
-            sc = new ShellCommand(this.shellVer,
+            this.commandList.push(new ShellCommand(this.shellVer,
                                   "ver",
-                                  "- Displays the current version data.");
-            this.commandList[this.commandList.length] = sc;
+                                  "- Displays the current version data."))
 
             // help
-            sc = new ShellCommand(this.shellHelp,
+            this.commandList.push(new ShellCommand(this.shellHelp,
                                   "help",
-                                  "- This is the help command. Seek help.");
-            this.commandList[this.commandList.length] = sc;
+                                  "- This is the help command. Seek help."))
 
             // shutdown
-            sc = new ShellCommand(this.shellShutdown,
+            this.commandList.push(new ShellCommand(this.shellShutdown,
                                   "shutdown",
-                                  "- Shuts down the virtual OS but leaves the underlying host / hardware simulation running.");
-            this.commandList[this.commandList.length] = sc;
+                                  "- Shuts down the virtual OS but leaves the underlying host / hardware simulation running."))
 
             // cls
-            sc = new ShellCommand(this.shellCls,
+            this.commandList.push(new ShellCommand(this.shellCls,
                                   "cls",
-                                  "- Clears the screen and resets the cursor position.");
-            this.commandList[this.commandList.length] = sc;
+                                  "- Clears the screen and resets the cursor position."))
 
             // man <topic>
-            sc = new ShellCommand(this.shellMan,
+            this.commandList.push(new ShellCommand(this.shellMan,
                                   "man",
-                                  "<topic> - Displays the MANual page for <topic>.");
-            this.commandList[this.commandList.length] = sc;
+                                  "<topic> - Displays the MANual page for <topic>."))
 
             // trace <on | off>
-            sc = new ShellCommand(this.shellTrace,
+            this.commandList.push(new ShellCommand(this.shellTrace,
                                   "trace",
-                                  "<on | off> - Turns the OS trace on or off.");
-            this.commandList[this.commandList.length] = sc;
+                                  "<on | off> - Turns the OS trace on or off."))
 
             // rot13 <string>
-            sc = new ShellCommand(this.shellRot13,
+            this.commandList.push(new ShellCommand(this.shellRot13,
                                   "rot13",
-                                  "<string> - Does rot13 obfuscation on <string>.");
-            this.commandList[this.commandList.length] = sc;
+                                  "<string> - Does rot13 obfuscation on <string>."))
 
             // prompt <string>
-            sc = new ShellCommand(this.shellPrompt,
+            this.commandList.push(new ShellCommand(this.shellPrompt,
                                   "prompt",
-                                  "<string> - Sets the prompt.");
-            this.commandList[this.commandList.length] = sc;
+                                  "<string> - Sets the prompt."))
 
             // ps  - list the running processes and their IDs
             // kill <id> - kills the specified process id.
