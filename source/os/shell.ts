@@ -131,32 +131,16 @@ module TSOS {
         }
 
         public parseInput(buffer): UserCommand {
-            var retVal = new UserCommand();
 
-            // 1. Remove leading and trailing spaces.
-            buffer = Utils.trim(buffer);
+            // e.g. "help   VER  " -> ["help", "ver"]
+            const cmdWords = buffer.trim().toLowerCase().split(' ').map(word => word.trim());
 
-            // 2. Lower-case it.
-            buffer = buffer.toLowerCase();
+            // The zeroth element is the command.
+            var cmd = cmdWords.shift();
 
-            // 3. Separate on spaces so we can determine the command and command-line args, if any.
-            var tempList = buffer.split(" ");
-
-            // 4. Take the first (zeroth) element and use that as the command.
-            var cmd = tempList.shift();  // Yes, you can do that to an array in JavaScript.  See the Queue class.
-            // 4.1 Remove any left-over spaces.
-            cmd = Utils.trim(cmd);
-            // 4.2 Record it in the return value.
-            retVal.command = cmd;
-
-            // 5. Now create the args array from what's left.
-            for (var i in tempList) {
-                var arg = Utils.trim(tempList[i]);
-                if (arg != "") {
-                    retVal.args[retVal.args.length] = tempList[i];
-                }
-            }
-            return retVal;
+            // The rest are args
+            const args = cmdWords.filter(arg => arg != "");
+            return new UserCommand(cmd, args);
         }
 
         //
