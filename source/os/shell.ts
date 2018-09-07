@@ -20,7 +20,7 @@ namespace TSOS {
     public promptStr = ">";
     public commandList: Array<ShellCommand> = [];
     public curses =
-      "[fuvg],[cvff],[shpx],[phag],[pbpxfhpxre],[zbgureshpxre],[gvgf]";
+      "[fuvg],[cvff],[shpx],[phag],[pbpxfhpxre],[zbgureshpxre],[gvgf],[qvpx]";
     public apologies = "[sorry]";
 
     constructor() {
@@ -96,6 +96,15 @@ namespace TSOS {
         )
       );
 
+      // date - displays current date
+      this.commandList.push(
+        new ShellCommand(
+          args => _StdOut.putText(new Date().toDateString()),
+          "date",
+          "- Displays the current date"
+        )
+      );
+
       // ps  - list the running processes and their IDs
       // kill <id> - kills the specified process id.
 
@@ -120,21 +129,9 @@ namespace TSOS {
       //
       // Determine the command and execute it.
       //
-      // TypeScript/JavaScript may not support associative arrays in all browsers so we have to iterate over the
-      // command list in attempt to find a match.  TODO: Is there a better way? Probably. Someone work it out and tell me in class.
-      var index: number = 0;
-      var found: boolean = false;
-      var fn = undefined;
-      while (!found && index < this.commandList.length) {
-        if (this.commandList[index].command === cmd) {
-          found = true;
-          fn = this.commandList[index].func;
-        } else {
-          ++index;
-        }
-      }
-      if (found) {
-        this.execute(fn, args);
+      const maybeCommand = _OsShell.commandList.filter(c => c.command === cmd);
+      if (maybeCommand.length === 1) {
+        this.execute(maybeCommand[0].func, args);
       } else {
         // It's not found, so check for curses and apologies before declaring the command invalid.
         if (this.curses.indexOf("[" + Utils.rot13(cmd) + "]") >= 0) {
