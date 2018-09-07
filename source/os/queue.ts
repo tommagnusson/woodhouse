@@ -8,7 +8,7 @@
 
    ------------ */
 
-export class Queue {
+export default class Queue {
   constructor(public q = new Array()) {}
 
   public getSize() {

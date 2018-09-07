@@ -1,3 +1,3 @@
-export class UserCommand {
+export default class UserCommand {
   constructor(public command = "", public args = []) {}
 }

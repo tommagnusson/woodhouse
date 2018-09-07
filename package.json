@@ -26,7 +26,13 @@
   "homepage": "https://github.com/tommagnusson/woodhouse#readme",
   "devDependencies": {
     "@types/jest": "^23.3.1",
+    "browserify": "^16.2.2",
     "jest": "^23.5.0",
-    "ts-jest": "^23.1.4"
+    "ts-jest": "^23.1.4",
+    "tsify": "^4.0.0",
+    "vinyl-source-stream": "^2.0.0"
+  },
+  "dependencies": {
+    "systemjs": "^0.21.4"
   }
 }

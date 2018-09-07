@@ -17,7 +17,7 @@
  *       That might be fun.
  * ----------------- */
 
-export class CanvasTextFunctions {
+export default class CanvasTextFunctions {
   public static symbols = {
     " ": { width: 16, points: [] },
     "!": {

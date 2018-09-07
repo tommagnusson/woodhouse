@@ -2,6 +2,6 @@
    Interrupt.ts
    ------------ */
 
-export class Interrupt {
+export default class Interrupt {
   constructor(public irq, public params) {}
 }

@@ -1,4 +1,5 @@
-///<reference path="../globals.ts" />
+import { Globals } from "../globals";
+import Queue from "../os/queue";
 
 /* ------------
      Console.ts
@@ -9,39 +10,51 @@
      Note: This is not the Shell. The Shell is the "command line interface" (CLI) or interpreter for this console.
      ------------ */
 
-export class Console {
+export default class Console {
   constructor(
-    public currentFont = _DefaultFontFamily,
-    public currentFontSize = _DefaultFontSize,
+    public drawingContext: any,
+    public canvas: HTMLCanvasElement,
+    public currentFont = Globals.DEFAULT_FONT_FAMILY,
+    public currentFontSize = Globals.DEFAULT_FONT_SIZE,
     public currentXPosition = 0,
-    public currentYPosition = _DefaultFontSize,
+    public currentYPosition = Globals.DEFAULT_FONT_SIZE,
     public buffer = ""
-  ) {}
+  ) {
+    this.drawingContext = drawingContext;
+    this.canvas = canvas;
+  }
 
   public init(): void {
     this.clearScreen();
     this.resetXY();
   }
 
-  private clearScreen(): void {
-    _DrawingContext.clearRect(0, 0, _Canvas.width, _Canvas.height);
+  public clearScreen(): void {
+    this.drawingContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  private resetXY(): void {
+  public resetXY(): void {
     this.currentXPosition = 0;
     this.currentYPosition = this.currentFontSize;
   }
 
-  public handleInput(): void {
-    while (_KernelInputQueue.getSize() > 0) {
+  // Entered command is a callback that takes in a command after the 'enter' key is found
+  // in the input queue.
+  // Log is an optional logging function that accepts the buffer
+  public handleInput(
+    inputQueue: Queue,
+    onEnteredCommand: any,
+    log?: any
+  ): void {
+    while (inputQueue.getSize() > 0) {
       // Get the next character from the kernel input queue.
-      var chr = _KernelInputQueue.dequeue();
+      var chr = inputQueue.dequeue();
       // Check to see if it's "special" (enter or ctrl-c) or "normal" (anything else that the keyboard device driver gave us).
       if (chr === String.fromCharCode(13)) {
         //     Enter key
         // The enter key marks the end of a console command, so ...
         // ... tell the shell ...
-        _OsShell.handleInput(this.buffer);
+        onEnteredCommand(this.buffer);
         // ... and reset our buffer.
         this.buffer = "";
       } else {
@@ -66,7 +79,7 @@ export class Console {
     //         Consider fixing that.
     if (text !== "") {
       // Draw the text at the current X and Y coordinates.
-      _DrawingContext.drawText(
+      this.drawingContext.drawText(
         this.currentFont,
         this.currentFontSize,
         this.currentXPosition,
@@ -74,7 +87,7 @@ export class Console {
         text
       );
       // Move the current X position.
-      var offset = _DrawingContext.measureText(
+      var offset = this.drawingContext.measureText(
         this.currentFont,
         this.currentFontSize,
         text
@@ -91,9 +104,9 @@ export class Console {
              * Font height margin is extra spacing between the lines.
              */
     this.currentYPosition +=
-      _DefaultFontSize +
-      _DrawingContext.fontDescent(this.currentFont, this.currentFontSize) +
-      _FontHeightMargin;
+      Globals.DEFAULT_FONT_SIZE +
+      this.drawingContext.fontDescent(this.currentFont, this.currentFontSize) +
+      Globals.FONT_HEIGHT_MARGIN;
 
     // TODO: Handle scrolling. (iProject 1)
   }

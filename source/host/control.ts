@@ -1,5 +1,10 @@
-///<reference path="../globals.ts" />
-///<reference path="../os/canvastext.ts" />
+import { Globals } from "../globals";
+import settings from "../settings";
+import CanvasTextFunctions from "../os/canvastext";
+import Cpu from "./cpu";
+import Host from "./devices";
+import Kernel from "../os/kernel";
+import DeviceDriverKeyboard from "../os/deviceDriverKeyboard";
 
 /* ------------
      Control.ts
@@ -23,99 +28,117 @@
 //
 // Control Services
 //
-module TSOS {
 
-    export class Control {
+export default class Control {
+  public static canvas: HTMLCanvasElement;
+  public static drawingContext: any;
 
-        public static hostInit(): void {
-            // This is called from index.html's onLoad event via the onDocumentLoad function pointer.
+  private static kernel: Kernel;
+  private static host: Host;
 
-            // Get a global reference to the canvas.  TODO: Should we move this stuff into a Display Device Driver?
-            _Canvas = <HTMLCanvasElement>document.getElementById('display');
+  // pub-sub model, to account for glados
+  private static afterStartupCallbacks = [];
+  public static addAfterStartupCallback(callback: any) {
+    this.afterStartupCallbacks.push(callback);
+  }
 
-            // Get a global reference to the drawing context.
-            _DrawingContext = _Canvas.getContext("2d");
+  public static hostInit(host: Host): void {
+    this.host = host;
 
-            // Enable the added-in canvas text functions (see canvastext.ts for provenance and details).
-            CanvasTextFunctions.enable(_DrawingContext);   // Text functionality is now built in to the HTML5 canvas. But this is old-school, and fun, so we'll keep it.
+    // This is called from index.html's onLoad event via the onDocumentLoad function pointer.
 
-            // Clear the log text box.
-            // Use the TypeScript cast to HTMLInputElement
-            (<HTMLInputElement> document.getElementById("taHostLog")).value="";
+    Control.canvas = <HTMLCanvasElement>document.getElementById("display");
 
-            // Set focus on the start button.
-            // Use the TypeScript cast to HTMLInputElement
-            (<HTMLInputElement> document.getElementById("btnStartOS")).focus();
+    // Get a global reference to the drawing context.
+    Control.drawingContext = Control.canvas.getContext("2d");
 
-            // Check for our testing and enrichment core, which
-            // may be referenced here (from index.html) as function Glados().
-            if (typeof Glados === "function") {
-                // function Glados() is here, so instantiate Her into
-                // the global (and properly capitalized) _GLaDOS variable.
-                _GLaDOS = new Glados();
-                _GLaDOS.init();
-            }
-        }
+    // Enable the added-in canvas text functions (see canvastext.ts for provenance and details).
+    CanvasTextFunctions.enable(Control.drawingContext); // Text functionality is now built in to the HTML5 canvas. But this is old-school, and fun, so we'll keep it.
 
-        public static hostLog(msg: string, source: string = "?"): void {
-            // Note the OS CLOCK.
-            var clock: number = _OSclock;
+    // Clear the log text box.
+    // Use the TypeScript cast to HTMLInputElement
+    (<HTMLInputElement>document.getElementById("taHostLog")).value = "";
 
-            // Note the REAL clock in milliseconds since January 1, 1970.
-            var now: number = new Date().getTime();
+    // Set focus on the start button.
+    // Use the TypeScript cast to HTMLInputElement
+    (<HTMLInputElement>document.getElementById("btnStartOS")).focus();
+  }
 
-            // Build the log string.
-            var str: string = "({ clock:" + clock + ", source:" + source + ", msg:" + msg + ", now:" + now  + " })"  + "\n";
+  public static hostLog(msg: string, source: string = "?"): void {
+    // Note the OS CLOCK.
+    var clock: number = settings.osClock;
 
-            // Update the log console.
-            var taLog = <HTMLInputElement> document.getElementById("taHostLog");
-            taLog.value = str + taLog.value;
+    // Note the REAL clock in milliseconds since January 1, 1970.
+    var now: number = new Date().getTime();
 
-            // TODO in the future: Optionally update a log database or some streaming service.
-        }
+    // Build the log string.
+    var str: string =
+      "({ clock:" +
+      clock +
+      ", source:" +
+      source +
+      ", msg:" +
+      msg +
+      ", now:" +
+      now +
+      " })" +
+      "\n";
 
+    // Update the log console.
+    var taLog = <HTMLInputElement>document.getElementById("taHostLog");
+    taLog.value = str + taLog.value;
 
-        //
-        // Host Events
-        //
-        public static hostBtnStartOS_click(btn): void {
-            // Disable the (passed-in) start button...
-            btn.disabled = true;
+    // TODO in the future: Optionally update a log database or some streaming service.
+  }
 
-            // .. enable the Halt and Reset buttons ...
-            (<HTMLButtonElement>document.getElementById("btnHaltOS")).disabled = false;
-            (<HTMLButtonElement>document.getElementById("btnReset")).disabled = false;
+  //
+  // Host Events
+  //
+  public static hostBtnStartOS_click(btn): void {
+    // Disable the (passed-in) start button...
+    btn.disabled = true;
 
-            // .. set focus on the OS console display ...
-            document.getElementById("display").focus();
+    // .. enable the Halt and Reset buttons ...
+    (<HTMLButtonElement>document.getElementById("btnHaltOS")).disabled = false;
+    (<HTMLButtonElement>document.getElementById("btnReset")).disabled = false;
 
-            // ... Create and initialize the CPU (because it's part of the hardware)  ...
-            _CPU = new Cpu();  // Note: We could simulate multi-core systems by instantiating more than one instance of the CPU here.
-            _CPU.init();       //       There's more to do, like dealing with scheduling and such, but this would be a start. Pretty cool.
+    // .. set focus on the OS console display ...
+    document.getElementById("display").focus();
 
-            // ... then set the host clock pulse ...
-            _hardwareClockID = setInterval(Devices.hostClockPulse, CPU_CLOCK_INTERVAL);
-            // .. and call the OS Kernel Bootstrap routine.
-            _Kernel = new Kernel();
-            _Kernel.krnBootstrap();  // _GLaDOS.afterStartup() will get called in there, if configured.
-        }
+    // ... Create and initialize the CPU (because it's part of the hardware)  ...
+    const cpu = new Cpu(); // Note: We could simulate multi-core systems by instantiating more than one instance of the CPU here.
+    cpu.init(); //       There's more to do, like dealing with scheduling and such, but this would be a start. Pretty cool.
 
-        public static hostBtnHaltOS_click(btn): void {
-            Control.hostLog("Emergency halt", "host");
-            Control.hostLog("Attempting Kernel shutdown.", "host");
-            // Call the OS shutdown routine.
-            _Kernel.krnShutdown();
-            // Stop the interval that's simulating our clock pulse.
-            clearInterval(_hardwareClockID);
-            // TODO: Is there anything else we need to do here?
-        }
+    // ... then set the host clock pulse ...
+    settings.hardwareClockID = setInterval(
+      this.host.clockPulse,
+      Globals.CPU_CLOCK_INTERVAL
+    );
+    // .. and call the OS Kernel Bootstrap routine.
+    this.kernel = new Kernel(cpu);
+    this.kernel.krnBootstrap(
+      new DeviceDriverKeyboard(this.kernel.interruptQueue)
+    );
 
-        public static hostBtnReset_click(btn): void {
-            // The easiest and most thorough way to do this is to reload (not refresh) the document.
-            location.reload(true);
-            // That boolean parameter is the 'forceget' flag. When it is true it causes the page to always
-            // be reloaded from the server. If it is false or not specified the browser may reload the
-            // page from its cache, which is not what we want.
-        }
-    }
+    // for interested callers, for example glados testing suite
+    this.afterStartupCallbacks.forEach(sub => sub());
+  }
+
+  public static hostBtnHaltOS_click(btn): void {
+    Control.hostLog("Emergency halt", "host");
+    Control.hostLog("Attempting Kernel shutdown.", "host");
+    // Call the OS shutdown routine.
+    this.kernel.krnShutdown();
+    // Stop the interval that's simulating our clock pulse.
+    clearInterval(settings.hardwareClockID);
+    // TODO: Is there anything else we need to do here?
+  }
+
+  public static hostBtnReset_click(btn): void {
+    // The easiest and most thorough way to do this is to reload (not refresh) the document.
+    location.reload(true);
+    // That boolean parameter is the 'forceget' flag. When it is true it causes the page to always
+    // be reloaded from the server. If it is false or not specified the browser may reload the
+    // page from its cache, which is not what we want.
+  }
 }
