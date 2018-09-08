@@ -105,6 +105,38 @@ namespace TSOS {
         )
       );
 
+      // whereami - displays the user's current location
+      this.commandList.push(
+        new ShellCommand(
+          args => _StdOut.putText("Archer's Mansion."),
+          "whereami",
+          "- Displays the user's current location"
+        )
+      );
+
+      this.commandList.push(
+        new ShellCommand(
+          args => {
+            let hasInvalidArgument = false;
+            const nums = args.map(arg => parseInt(arg));
+            nums.forEach(num => {
+              if (isNaN(num)) {
+                hasInvalidArgument = true;
+              }
+            });
+            if (hasInvalidArgument) {
+              _StdOut.putText(
+                "Found a non-integer arg. Please provide all integer args."
+              );
+            }
+
+            _StdOut.putText(`${nums.reduce((n1, n2) => n1 + n2)}`);
+          },
+          "add",
+          "<integer>...  - Adds any number of integer arguments."
+        )
+      );
+
       // ps  - list the running processes and their IDs
       // kill <id> - kills the specified process id.
 
@@ -240,7 +272,6 @@ namespace TSOS {
     }
 
     public shellMan(args) {
-      console.log(args);
       if (args.length > 0) {
         const topic = args[0];
 
