@@ -65,10 +65,6 @@ namespace TSOS {
       //
       // UPDATE: Even though we are now working in TypeScript, char and string remain undistinguished.
       //         Consider fixing that.
-      if (text === "\n") {
-        this.advanceLine();
-        return;
-      }
 
       if (text !== "") {
         // Draw the text at the current X and Y coordinates.

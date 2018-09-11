@@ -1,38 +1,14 @@
 /* TSOS.css */
 
 body {
-  background: #909193 url(distrib/images/linen.png) repeat;
   font-family: Helvetica, Verdana, Arial, sans-serif;
   font-size: 12pt;
   font-weight: normal;
   font-style: normal;
-}
-
-h1 {
-  color: black;
-  font-size: 24pt;
-  font-weight: normal;
-  font-style: normal;
-  border-bottom: 1px solid black;
-}
-
-h2 {
-  color: black;
-  font-size: 20pt;
-  font-weight: normal;
-  font-style: normal;
-}
-
-h3 {
-  font-family: Helvetica, Verdana, Arial, sans-serif;
-  font-size: 16pt;
-  font-weight: normal;
-  font-style: normal;
+  color: white;
 }
 
 #display {
-  background-color:#DFDBC3;
-  border: 2px solid red;
   cursor: default;
 }
 
@@ -41,8 +17,26 @@ h3 {
 }
 
 .footerText {
-  color: black;
+  color: white;
   font-family: Arial, Helvetica, sans-serif;
   font-size: 8pt;
   text-align: center;
+}
+
+#divMain {
+  display: grid;
+  grid-template-columns: 1fr 700px 700px 1fr;
+  align-content: center;
+}
+
+.left {
+  grid-column: 2;
+  justify-self: center;
+  align-self: center;
+}
+
+.right {
+  grid-column: 3;
+  justify-self: center;
+  align-self: center;
 }
