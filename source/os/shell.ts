@@ -117,35 +117,17 @@ namespace TSOS {
       this.commandList.push(
         new ShellCommand(
           args => {
-            if (!args) {
-              _StdOut.putText(_Status);
-            } else {
-              _Status = Utils.unquote(args[0]);
-            }
+            _Status = args.join(" ");
+            _StdOut.putText(_Status);
           },
           "status",
-          '"<string>" - Sets the current status to string in double quotes'
+          "<string> - Sets the current status to the string given"
         )
       );
 
       this.commandList.push(
         new ShellCommand(
-          args => {
-            let hasInvalidArgument = false;
-            const nums = args.map(arg => parseInt(arg));
-            nums.forEach(num => {
-              if (isNaN(num)) {
-                hasInvalidArgument = true;
-              }
-            });
-            if (hasInvalidArgument) {
-              _StdOut.putText(
-                "Found a non-integer arg. Please provide all integer args."
-              );
-            }
-
-            _StdOut.putText(`${nums.reduce((n1, n2) => n1 + n2)}`);
-          },
+          this.shellAdd,
           "add",
           "<integer>...  - Adds any number of integer arguments."
         )
@@ -344,6 +326,23 @@ namespace TSOS {
       } else {
         _StdOut.putText("Usage: prompt <string>  Please supply a string.");
       }
+    }
+
+    public shellAdd(args) {
+      let hasInvalidArgument = false;
+      const nums = args.map(arg => parseInt(arg));
+      nums.forEach(num => {
+        if (isNaN(num)) {
+          hasInvalidArgument = true;
+        }
+      });
+      if (hasInvalidArgument) {
+        _StdOut.putText(
+          "Found a non-integer arg. Please provide all integer args."
+        );
+      }
+
+      _StdOut.putText(`${nums.reduce((n1, n2) => n1 + n2)}`);
     }
   }
 }
