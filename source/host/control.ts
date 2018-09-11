@@ -45,13 +45,14 @@ namespace TSOS {
       // Use the TypeScript cast to HTMLInputElement
       (<HTMLInputElement>document.getElementById("btnStartOS")).focus();
 
-      console.log("tick");
+      // updates the time and status
       const tick = () => {
         const now = new Date(Date.now());
         document.getElementById("date").textContent =
-          now.toLocaleDateString() + now.toLocaleTimeString();
+          now.toLocaleDateString() + " " + now.toLocaleTimeString();
+        document.getElementById("status").textContent = _Status;
       };
-      // init the clock
+      // init the clock display
       setInterval(tick, 500);
 
       // Check for our testing and enrichment core, which

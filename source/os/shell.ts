@@ -117,6 +117,20 @@ namespace TSOS {
       this.commandList.push(
         new ShellCommand(
           args => {
+            if (!args) {
+              _StdOut.putText(_Status);
+            } else {
+              _Status = Utils.unquote(args[0]);
+            }
+          },
+          "status",
+          '"<string>" - Sets the current status to string in double quotes'
+        )
+      );
+
+      this.commandList.push(
+        new ShellCommand(
+          args => {
             let hasInvalidArgument = false;
             const nums = args.map(arg => parseInt(arg));
             nums.forEach(num => {
