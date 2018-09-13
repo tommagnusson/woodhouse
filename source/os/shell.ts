@@ -145,12 +145,51 @@ namespace TSOS {
       _StdOut.putText(this.promptStr);
     }
 
+    public completeCommand(buffer): string {
+      _Kernel.krnTrace("Code complete~" + buffer);
+
+      const incompleteCommand = this.decomposeInput(buffer);
+
+      // nonexistent command or command with args
+      if (incompleteCommand.length != 1) {
+        return;
+      }
+
+      // get possible matches for buffer from command list
+      const possibleCompleteCommands = this.commandList.filter(
+        c => c.command.indexOf(incompleteCommand[0]) === 0
+      );
+
+      // if we have only one candidate, nonabiguously complete
+      if (possibleCompleteCommands.length === 1) {
+        return this.completeRest(
+          possibleCompleteCommands[0].command,
+          incompleteCommand[0]
+        );
+      }
+    }
+
+    private completeRest(
+      completeCommand: string,
+      commandSoFar: string
+    ): string {
+      // index should be negative
+      const index = commandSoFar.length - completeCommand.length;
+      return completeCommand.slice(index);
+    }
+
     public handleInput(buffer) {
       _Kernel.krnTrace("Shell Command~" + buffer);
+
+      if (buffer === "") {
+        this.putPrompt();
+        return;
+      }
+
       //
       // Parse the input...
       //
-      var userCommand = this.parseInput(buffer);
+      var userCommand = this.parseInput(buffer.trim());
       // ... and assign the command and args to local variables.
       var cmd = userCommand.command;
       var args = userCommand.args;
@@ -189,13 +228,17 @@ namespace TSOS {
       this.putPrompt();
     }
 
-    public parseInput(buffer): UserCommand {
-      // e.g. "help   VER  " -> ["help", "ver"]
-      const cmdWords = buffer
+    // e.g. "help   VER  " -> ["help", "ver"]
+    private decomposeInput(buffer: string): Array<string> {
+      return buffer
         .trim()
         .toLowerCase()
         .split(" ")
         .map(word => word.trim());
+    }
+
+    public parseInput(buffer): UserCommand {
+      const cmdWords = this.decomposeInput(buffer);
 
       // The zeroth element is the command.
       var cmd = cmdWords.shift();

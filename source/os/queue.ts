@@ -8,37 +8,45 @@
 
    ------------ */
 
-module TSOS {
-    export class Queue {
-        constructor(public q = new Array()) {
-        }
+namespace TSOS {
+  export class Queue {
+    constructor(public q = new Array()) {}
 
-        public getSize() {
-            return this.q.length;
-        }
-
-        public isEmpty(){
-            return (this.q.length == 0);
-        }
-
-        public enqueue(element) {
-            this.q.push(element);
-        }
-
-        public dequeue() {
-            var retVal = null;
-            if (this.q.length > 0) {
-                retVal = this.q.shift();
-            }
-            return retVal;
-        }
-
-        public toString() {
-            var retVal = "";
-            for (var i in this.q) {
-                retVal += "[" + this.q[i] + "] ";
-            }
-            return retVal;
-        }
+    public getSize() {
+      return this.q.length;
     }
+
+    public isEmpty() {
+      return this.q.length == 0;
+    }
+
+    public enqueue(element) {
+      this.q.push(element);
+    }
+
+    public dequeue() {
+      const shifted = this.q.shift();
+      return shifted ? shifted : null;
+    }
+
+    public peek() {
+      if (this.q.length === 0) {
+        return null;
+      }
+      return this.q[this.q.length - 1];
+    }
+
+    public pop() {
+      const popped = this.q.pop();
+      return popped ? popped : null;
+    }
+
+    public toString() {
+      var retVal = "";
+      for (var i in this.q) {
+        retVal += "[" + this.q[i] + "] ";
+      }
+      return retVal;
+    }
+  }
 }

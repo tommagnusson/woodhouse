@@ -40,6 +40,17 @@ namespace TSOS {
         // 222 is apparently double quote...
         _KernelInputQueue.enqueue('"');
       }
+
+      // tab (code complete)
+      if (keyCode === 9) {
+        _KernelInputQueue.enqueue("\t");
+      }
+
+      // backspace
+      if (keyCode === 8) {
+        _KernelInputQueue.enqueue("\b");
+      }
+
       if (
         (keyCode >= 65 && keyCode <= 90) || // A..Z
         (keyCode >= 97 && keyCode <= 123)

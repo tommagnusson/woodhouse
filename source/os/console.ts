@@ -38,6 +38,27 @@ namespace TSOS {
         // Get the next character from the kernel input queue.
         var chr = _KernelInputQueue.dequeue();
         // Check to see if it's "special" (enter or ctrl-c) or "normal" (anything else that the keyboard device driver gave us).
+
+        // handle backspace
+        if (chr === "\b") {
+          // get the character to be deleted
+          const deletedChar = this.buffer[this.buffer.length - 1];
+
+          // remove the deleted character from the buffer
+          this.buffer = this.buffer.substring(0, this.buffer.length - 1);
+          console.log("now buffer: " + this.buffer);
+
+          this.backspace(deletedChar);
+        }
+
+        if (chr === "\t") {
+          const restOfCompletedCommand = _OsShell.completeCommand(this.buffer);
+          if (restOfCompletedCommand) {
+            this.putText(restOfCompletedCommand);
+            this.buffer += restOfCompletedCommand + " ";
+          }
+        }
+
         if (chr === String.fromCharCode(13)) {
           //     Enter key
           // The enter key marks the end of a console command, so ...
@@ -54,6 +75,28 @@ namespace TSOS {
         }
         // TODO: Write a case for Ctrl-C.
       }
+    }
+
+    public backspace(prevChar?: String): void {
+      if (!prevChar) return;
+
+      console.log("Attempting to delete: " + prevChar);
+
+      console.log("length of ", prevChar, prevChar.length);
+      const offset = _DrawingContext.measureText(
+        this.currentFont,
+        this.currentFontSize,
+        prevChar
+      );
+
+      _DrawingContext.fillRect(
+        this.currentXPosition - offset.width,
+        this.currentXPosition,
+        offset.width,
+        this.lineHeight()
+      );
+
+      _DrawingContext.fillRect(10, 10, 100, 100);
     }
 
     public putText(text): void {
@@ -92,12 +135,17 @@ namespace TSOS {
              * Font descent measures from the baseline to the lowest point in the font.
              * Font height margin is extra spacing between the lines.
              */
-      this.currentYPosition +=
-        _DefaultFontSize +
-        _DrawingContext.fontDescent(this.currentFont, this.currentFontSize) +
-        _FontHeightMargin;
+      this.currentYPosition += this.lineHeight();
 
       // TODO: Handle scrolling. (iProject 1)
+    }
+
+    private lineHeight(): number {
+      return (
+        _DefaultFontSize +
+        _DrawingContext.fontDescent(this.currentFont, this.currentFontSize) +
+        _FontHeightMargin
+      );
     }
   }
 }
