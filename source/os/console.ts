@@ -37,12 +37,6 @@ namespace TSOS {
       while (_KernelInputQueue.getSize() > 0) {
         const chr = _KernelInputQueue.dequeue();
         const fromCharCode = str => str.split("").map(s => s.charCodeAt(0));
-        console.log(
-          "buffer",
-          this.buffer,
-          this.buffer.length,
-          fromCharCode(this.buffer)
-        );
 
         // key is the input char, value is the function to be run on value
         const onInputVector = {
@@ -59,7 +53,6 @@ namespace TSOS {
           maybeOnMethod();
         } else {
           // This is a "normal" character
-          console.log("normal character", chr);
           this.putText(chr);
           this.buffer += chr;
         }
@@ -98,8 +91,6 @@ namespace TSOS {
     public backspace = (prevChar?: string): void => {
       if (!prevChar) return;
 
-      console.log("Attempting to delete: " + prevChar);
-
       const offset = _DrawingContext.measureText(
         this.currentFont,
         this.currentFontSize,
@@ -108,15 +99,14 @@ namespace TSOS {
 
       this.currentXPosition -= offset;
 
+      // 9/14/18 "Yeah, you have to add something!" - Dr. Alan Labouseur
+      const magicNumberAlanToldMeToAdd = 20;
       _DrawingContext.clearRect(
         this.currentXPosition,
-        this.currentYPosition - this.lineHeight() + _FontHeightMargin / 2,
+        this.currentYPosition - this.lineHeight() + _FontHeightMargin,
         offset,
-        this.lineHeight()
+        this.lineHeight() + magicNumberAlanToldMeToAdd
       );
-
-      console.dir(this);
-      console.dir(_DrawingContext);
     };
 
     private onBackspace = () => {
