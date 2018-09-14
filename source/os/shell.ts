@@ -13,8 +13,66 @@
    ------------ */
 
 // TODO: Write a base class / prototype for system services and let Shell inherit from it.
-
 namespace TSOS {
+  // represents a history of commands for the shell
+  class ScrubbableHistory {
+    // we initially start with no command entered (which itself must be represented as a command :/ )
+    private commands: Array<ShellCommand> = [
+      new ShellCommand(() => {}, "", "no command")
+    ];
+
+    // always the latest command added, unless scrubBackward/Forward called
+    private scrubIndex: number = 0;
+
+    public latest(): ShellCommand {
+      if (!this.commands.length) {
+        return null;
+      }
+      this.scrubIndex = this.resetScrub();
+      return this.commands[this.scrubIndex];
+    }
+
+    private resetScrub(): number {
+      this.scrubIndex = this.commands.length - 1;
+      return this.scrubIndex;
+    }
+
+    public record(command: ShellCommand) {
+      this.commands.push(command);
+      this.resetScrub();
+    }
+
+    public scrubBackward(nCommands: number): ShellCommand {
+      if (this.commands.length === 0) {
+        return null;
+      }
+
+      if (nCommands > this.scrubIndex) {
+        return null;
+      }
+
+      this.scrubIndex = this.scrubIndex - nCommands;
+      return this.current();
+    }
+
+    public scrubForward(nCommands: number): ShellCommand {
+      if (this.commands.length === 0) {
+        return null;
+      }
+
+      if (nCommands < this.scrubIndex) {
+        return null;
+      }
+
+      this.scrubIndex = this.scrubIndex + nCommands;
+      return this.current();
+    }
+
+    public current() {
+      return this.commands[this.scrubIndex];
+    }
+  }
+
   export class Shell {
     // Properties
     public promptStr = ">";
@@ -22,6 +80,7 @@ namespace TSOS {
     public curses =
       "[fuvg],[cvff],[shpx],[phag],[pbpxfhpxre],[zbgureshpxre],[gvgf],[qvpx]";
     public apologies = "[sorry]";
+    public commandHistory = new ScrubbableHistory();
 
     constructor() {
       // ver
@@ -173,18 +232,17 @@ namespace TSOS {
       completeCommand: string,
       commandSoFar: string
     ): string {
-      // index should be negative
+      // index should be negative or 0
       const index = commandSoFar.length - completeCommand.length;
+      // exact matching command, nothing left to return
+      if (index === 0) {
+        return "";
+      }
       return completeCommand.slice(index);
     }
 
     public handleInput(buffer) {
       _Kernel.krnTrace("Shell Command~" + buffer);
-
-      if (buffer === "") {
-        this.putPrompt();
-        return;
-      }
 
       //
       // Parse the input...
@@ -198,7 +256,9 @@ namespace TSOS {
       //
       const maybeCommand = _OsShell.commandList.filter(c => c.command === cmd);
       if (maybeCommand.length === 1) {
-        this.execute(maybeCommand[0].func, args);
+        const command = maybeCommand[0];
+        this.execute(command.func, args);
+        this.commandHistory.record(command);
       } else {
         // It's not found, so check for curses and apologies before declaring the command invalid.
         if (this.curses.indexOf("[" + Utils.rot13(cmd) + "]") >= 0) {
@@ -224,6 +284,7 @@ namespace TSOS {
       if (_StdOut.currentXPosition > 0) {
         _StdOut.advanceLine();
       }
+
       // ... and finally write the prompt again.
       this.putPrompt();
     }

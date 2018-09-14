@@ -51,6 +51,14 @@ namespace TSOS {
         _KernelInputQueue.enqueue("\b");
       }
 
+      if (keyCode === 38) {
+        _KernelInputQueue.enqueue("↑");
+      }
+
+      if (keyCode === 40) {
+        _KernelInputQueue.enqueue("↓");
+      }
+
       if (
         (keyCode >= 65 && keyCode <= 90) || // A..Z
         (keyCode >= 97 && keyCode <= 123)

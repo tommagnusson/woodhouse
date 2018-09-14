@@ -51,6 +51,31 @@ namespace TSOS {
           this.backspace(deletedChar);
         }
 
+        const putNewCommand = (command: TSOS.ShellCommand) => {
+          if (!command) {
+            return false;
+          }
+          _StdOut.advanceLine();
+          _OsShell.putPrompt();
+          _StdOut.putText(command.command);
+          return true;
+        };
+
+        if (chr === "↓") {
+          const command = _OsShell.commandHistory.scrubForward(1);
+          if (!putNewCommand(command)) {
+            return;
+          }
+          this.buffer = command.command;
+        }
+        if (chr === "↑") {
+          const command = _OsShell.commandHistory.scrubBackward(1);
+          if (!putNewCommand(command)) {
+            return;
+          }
+          this.buffer = command.command;
+        }
+
         if (chr === "\t") {
           const restOfCompletedCommand = _OsShell.completeCommand(this.buffer);
           if (restOfCompletedCommand) {
