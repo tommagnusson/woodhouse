@@ -245,25 +245,19 @@ namespace TSOS {
           // Check for apologies.
           this.execute(this.shellApology);
         } else {
-          // It's just a bad command. {
+          // It's just a bad command.
           console.log(userCommand);
           this.execute(this.shellInvalidCommand);
         }
       }
     }
 
-    // Note: args is an option parameter, ergo the ? which allows TypeScript to understand that.
     public execute(fn, args?) {
-      // We just got a command, so advance the line...
       _StdOut.advanceLine();
-      // ... call the command function passing in the args with some über-cool functional programming ...
       fn(args);
-      // Check to see if we need to advance the line again
       if (_StdOut.currentXPosition > 0) {
         _StdOut.advanceLine();
       }
-
-      // ... and finally write the prompt again.
       this.putPrompt();
     }
 

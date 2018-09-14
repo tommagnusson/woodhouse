@@ -35,84 +35,35 @@ namespace TSOS {
 
     public handleInput(): void {
       while (_KernelInputQueue.getSize() > 0) {
-        // Get the next character from the kernel input queue.
-        var chr = _KernelInputQueue.dequeue();
-        // Check to see if it's "special" (enter or ctrl-c) or "normal" (anything else that the keyboard device driver gave us).
+        const chr = _KernelInputQueue.dequeue();
 
-        // handle backspace
-        if (chr === "\b") {
-          // get the character to be deleted
-          const deletedChar = this.buffer[this.buffer.length - 1];
-
-          // remove the deleted character from the buffer
-          this.buffer = this.buffer.substring(0, this.buffer.length - 1);
-          console.log("now buffer: " + this.buffer);
-
-          this.backspace(deletedChar);
-        }
-
-        const putNewCommand = (command: TSOS.ShellCommand): boolean => {
-          if (!command) {
-            return false;
-          }
-          _StdOut.advanceLine();
-          _OsShell.putPrompt();
-          _StdOut.putText(command.command);
-          return true;
+        // key is the input char, value is the function to be run on value
+        const onInputVector = {
+          "\b": this.onBackspace,
+          "\t": this.onTab,
+          [String.fromCharCode(13)]: this.onEnter,
+          "↓": this.onDownArrow,
+          "↑": this.onUpArrow
         };
 
-        if (chr === "↓") {
-          const command = _OsShell.nextCommand();
-          console.log("next", command);
-          if (!putNewCommand(command)) {
-            return;
-          }
-          this.buffer = command.command;
-          return;
-        }
-        if (chr === "↑") {
-          const command = _OsShell.previousCommand();
-          console.log("previous", command);
-          if (!putNewCommand(command)) {
-            return;
-          }
-          this.buffer = command.command;
-          return;
-        }
-
-        if (chr === "\t") {
-          const restOfCompletedCommand = _OsShell.completeCommand(this.buffer);
-          if (restOfCompletedCommand) {
-            this.putText(restOfCompletedCommand);
-            this.buffer += restOfCompletedCommand + " ";
-          }
-          return; // don't add \t to the buffer!
-        }
-
-        if (chr === String.fromCharCode(13)) {
-          //     Enter key
-          // The enter key marks the end of a console command, so ...
-          // ... tell the shell ...
-          _OsShell.handleInput(this.buffer);
-          // ... and reset our buffer.
-          this.buffer = "";
+        const maybeOnMethod = onInputVector[chr];
+        if (maybeOnMethod) {
+          // character that triggers a special method
+          maybeOnMethod();
         } else {
-          // This is a "normal" character, so ...
-          // ... draw it on the screen...
+          // This is a "normal" character
           this.putText(chr);
-          // ... and add it to our buffer.
           this.buffer += chr;
         }
         // TODO: Write a case for Ctrl-C.
       }
     }
 
-    public backspace(prevChar?: String): void {
+    public backspace = (prevChar?: string): void => {
       if (!prevChar) return;
 
       console.log("Attempting to delete: " + prevChar);
 
-      console.log("length of ", prevChar, prevChar.length);
       const offset = _DrawingContext.measureText(
         this.currentFont,
         this.currentFontSize,
@@ -120,14 +71,65 @@ namespace TSOS {
       );
 
       _DrawingContext.fillRect(
-        this.currentXPosition - offset.width,
+        this.currentXPosition - offset,
         this.currentXPosition,
         offset.width,
         this.lineHeight()
       );
+    };
 
-      _DrawingContext.fillRect(10, 10, 100, 100);
+    private putNewCommand(command: TSOS.ShellCommand): boolean {
+      if (!command) {
+        return false;
+      }
+      _StdOut.advanceLine();
+      _OsShell.putPrompt();
+      _StdOut.putText(command.command);
+      return true;
     }
+
+    private onDownArrow = () => {
+      const command = _OsShell.nextCommand();
+      if (!this.putNewCommand(command)) {
+        return;
+      }
+      this.buffer = command.command;
+      return;
+    };
+
+    private onUpArrow = () => {
+      const command = _OsShell.previousCommand();
+      if (!this.putNewCommand(command)) {
+        return;
+      }
+      this.buffer = command.command;
+      return;
+    };
+
+    private onBackspace = () => {
+      // get the character to be deleted
+      const deletedChar = this.buffer[this.buffer.length - 1];
+
+      // remove the deleted character from the buffer
+      this.buffer = this.buffer.substring(0, this.buffer.length - 1);
+      console.log("now buffer: " + this.buffer);
+
+      this.backspace(deletedChar);
+    };
+
+    private onTab = () => {
+      const restOfCompletedCommand = _OsShell.completeCommand(this.buffer);
+      if (restOfCompletedCommand) {
+        this.putText(restOfCompletedCommand);
+        this.buffer += restOfCompletedCommand + " ";
+      }
+    };
+
+    private onEnter = () => {
+      // tells shell to try to execute the command from the buffer
+      _OsShell.handleInput(this.buffer);
+      this.buffer = "";
+    };
 
     public putText(text): void {
       // My first inclination here was to write two functions: putChar() and putString().

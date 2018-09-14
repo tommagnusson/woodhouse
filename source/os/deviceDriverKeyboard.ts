@@ -37,7 +37,7 @@ namespace TSOS {
       let chr = "";
 
       // The javascript || will return the first nonnull/nonundefined value...
-      // This is the type of short circuit behavior that makes this fast
+      // This is the type of short circuit behavior is fast
       const toBeEnqueued =
         this.determineChar(keyCode, isShifted) ||
         this.determineNumeric(keyCode, isShifted) ||
@@ -63,7 +63,20 @@ namespace TSOS {
 
     private determineSymbol(keyCode, isShifted) {
       if (!isShifted) {
-        return null; // no symbols here
+        const unshiftedCodeToChar = {
+          192: "`",
+          186: ";",
+          187: "=",
+          188: ",",
+          189: "-",
+          190: ".",
+          191: "/",
+          219: "[",
+          220: "\\",
+          221: "]",
+          222: "'"
+        };
+        return unshiftedCodeToChar[keyCode];
       }
       const shiftedCodeToChar = {
         48: ")",
@@ -86,7 +99,7 @@ namespace TSOS {
         188: "<",
         190: ">",
         191: "?",
-        192: "`"
+        192: "~"
       };
 
       // vector sort of implementation of this
