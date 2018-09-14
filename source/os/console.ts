@@ -59,25 +59,6 @@ namespace TSOS {
       }
     }
 
-    public backspace = (prevChar?: string): void => {
-      if (!prevChar) return;
-
-      console.log("Attempting to delete: " + prevChar);
-
-      const offset = _DrawingContext.measureText(
-        this.currentFont,
-        this.currentFontSize,
-        prevChar
-      );
-
-      _DrawingContext.fillRect(
-        this.currentXPosition - offset,
-        this.currentXPosition,
-        offset.width,
-        this.lineHeight()
-      );
-    };
-
     private putNewCommand(command: TSOS.ShellCommand): boolean {
       if (!command) {
         return false;
@@ -106,13 +87,41 @@ namespace TSOS {
       return;
     };
 
+    public backspace = (prevChar?: string): void => {
+      if (!prevChar) return;
+
+      console.log("Attempting to delete: " + prevChar);
+
+      const offset = _DrawingContext.measureText(
+        this.currentFont,
+        this.currentFontSize,
+        prevChar
+      );
+
+      this.currentXPosition -= offset;
+
+      const tempStyle = _DrawingContext.fillStyle;
+      _DrawingContext.fillStyle = "#FFF"; // white, to erase
+
+      // + 5 because it doesn't look like it's actually the line height?
+      _DrawingContext.fillRect(
+        this.currentXPosition,
+        this.currentYPosition - this.lineHeight() + 5,
+        offset,
+        this.lineHeight()
+      );
+      _DrawingContext.fillStyle = tempStyle; // Leave No Trace (Boyscouts or serial killer, you decide)
+
+      console.dir(this);
+      console.dir(_DrawingContext);
+    };
+
     private onBackspace = () => {
       // get the character to be deleted
       const deletedChar = this.buffer[this.buffer.length - 1];
 
       // remove the deleted character from the buffer
       this.buffer = this.buffer.substring(0, this.buffer.length - 1);
-      console.log("now buffer: " + this.buffer);
 
       this.backspace(deletedChar);
     };
