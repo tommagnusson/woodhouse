@@ -31,57 +31,110 @@ namespace TSOS {
 
     public krnKbdDispatchKeyPress(params) {
       // Parse the params.    TODO: Check that the params are valid and osTrapError if not.
-      var keyCode = params[0];
-      var isShifted = params[1];
+      const keyCode = params[0];
+      const isShifted = params[1];
       _Kernel.krnTrace("Key code:" + keyCode + " shifted:" + isShifted);
-      var chr = "";
-      // Check to see if we even want to deal with the key that was pressed.
-      if (keyCode === 222) {
-        // 222 is apparently double quote...
-        _KernelInputQueue.enqueue('"');
-      }
+      let chr = "";
 
-      // tab (code complete)
-      if (keyCode === 9) {
-        _KernelInputQueue.enqueue("\t");
-      }
+      // The javascript || will return the first nonnull/nonundefined value...
+      // This is the type of short circuit behavior that makes this fast
+      const toBeEnqueued =
+        this.determineChar(keyCode, isShifted) ||
+        this.determineNumeric(keyCode, isShifted) ||
+        this.determineSymbol(keyCode, isShifted) ||
+        this.determineSpecial(keyCode, isShifted);
 
-      // backspace
-      if (keyCode === 8) {
-        _KernelInputQueue.enqueue("\b");
+      if (toBeEnqueued) {
+        _KernelInputQueue.enqueue(toBeEnqueued);
       }
+    }
 
-      if (keyCode === 38) {
-        _KernelInputQueue.enqueue("↑");
-      }
+    private determineSpecial(keyCode, isShifted) {
+      const specialCodeToChar = {
+        8: "\b",
+        9: "\t",
+        13: String.fromCharCode(13),
+        32: " ",
+        38: "↑",
+        40: "↓"
+      };
+      return specialCodeToChar[keyCode];
+    }
 
-      if (keyCode === 40) {
-        _KernelInputQueue.enqueue("↓");
+    private determineSymbol(keyCode, isShifted) {
+      if (!isShifted) {
+        return null; // no symbols here
       }
+      const shiftedCodeToChar = {
+        48: ")",
+        49: "!",
+        50: "@",
+        51: "#",
+        52: "$",
+        53: "%",
+        54: "^",
+        55: "&",
+        56: "*",
+        57: "(",
+        189: "_",
+        187: "+",
+        219: "{",
+        221: "}",
+        220: "|",
+        186: ":",
+        222: '"',
+        188: "<",
+        190: ">",
+        191: "?",
+        192: "`"
+      };
+
+      // vector sort of implementation of this
+      return shiftedCodeToChar[keyCode];
+    }
+
+    private determineNumeric(keyCode, isShifted) {
+      const numerics = { lowerInclusive: 48, upperInclusive: 57 };
 
       if (
-        (keyCode >= 65 && keyCode <= 90) || // A..Z
-        (keyCode >= 97 && keyCode <= 123)
+        keyCode >= numerics.lowerInclusive &&
+        keyCode <= numerics.upperInclusive &&
+        !isShifted
       ) {
-        // a..z {
-        // Determine the character we want to display.
-        // Assume it's lowercase...
-        chr = String.fromCharCode(keyCode + 32);
-        // ... then check the shift key and re-adjust if necessary.
-        if (isShifted) {
-          chr = String.fromCharCode(keyCode);
-        }
-        // TODO: Check for caps-lock and handle as shifted if so.
-        _KernelInputQueue.enqueue(chr);
-      } else if (
-        (keyCode >= 48 && keyCode <= 57) || // digits
-        keyCode == 32 || // space
-        keyCode == 13
-      ) {
-        // enter
-        chr = String.fromCharCode(keyCode);
-        _KernelInputQueue.enqueue(chr);
+        return String.fromCharCode(keyCode);
       }
+      // not a numeric
+      return null;
+    }
+
+    private determineChar(keyCode, isShifted): string {
+      const uppercase = { lowerInclusive: 65, upperInclusive: 90 };
+      const lowercase = { lowerInclusive: 97, upperInclusive: 123 };
+      const fromUpperToLowerDiff = 32;
+
+      if (
+        keyCode >= uppercase.lowerInclusive &&
+        keyCode <= uppercase.upperInclusive
+      ) {
+        // shift means they want uppercase, which is the case anyways
+        if (isShifted) {
+          return String.fromCharCode(keyCode);
+        }
+
+        // convert keyCode into the lowercase
+        return String.fromCharCode(keyCode + fromUpperToLowerDiff);
+      }
+
+      // uppercase anyways, we don't care about shift
+      if (
+        keyCode >= uppercase.lowerInclusive &&
+        keyCode <= uppercase.upperInclusive
+      ) {
+        return String.fromCharCode(keyCode);
+      }
+
+      // not a char
+      return null;
     }
   }
 }
