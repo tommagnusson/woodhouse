@@ -14,62 +14,6 @@
 
 // TODO: Write a base class / prototype for system services and let Shell inherit from it.
 namespace TSOS {
-  // represents a history of commands for the shell
-  class ScrubbableHistory {
-    // we initially start with no command entered
-    private commands: Array<ShellCommand> = [];
-
-    // always the latest command added, unless scrubBackward/Forward called
-    private scrubIndex: number = 0;
-
-    private buffer: string = "";
-
-    // buffer - the initial text the user's initially entered but not pressed as a command
-    public constructor(buffer: string) {
-      this.buffer = buffer;
-    }
-
-    private resetScrub(): number {
-      this.scrubIndex = this.commands.length - 1;
-      return this.scrubIndex;
-    }
-
-    public record(command: ShellCommand) {
-      this.commands.push(command);
-      this.resetScrub();
-    }
-
-    public scrubBackward(nCommands: number): ShellCommand {
-      if (this.commands.length === 0) {
-        return null;
-      }
-
-      if (nCommands > this.scrubIndex) {
-        return null;
-      }
-
-      this.scrubIndex = this.scrubIndex - nCommands;
-      return this.current();
-    }
-
-    public scrubForward(nCommands: number): ShellCommand {
-      if (this.commands.length === 0) {
-        return null;
-      }
-
-      if (nCommands < this.scrubIndex) {
-        return null;
-      }
-
-      this.scrubIndex = this.scrubIndex + nCommands;
-      return this.current();
-    }
-
-    public current() {
-      return this.commands[this.scrubIndex];
-    }
-  }
-
   export class Shell {
     // Properties
     public promptStr = ">";
@@ -77,7 +21,12 @@ namespace TSOS {
     public curses =
       "[fuvg],[cvff],[shpx],[phag],[pbpxfhpxre],[zbgureshpxre],[gvgf],[qvpx]";
     public apologies = "[sorry]";
-    public commandHistory = new ScrubbableHistory();
+
+    // history of commands, indexed oldest 0 to newest len - 1
+    public commandHistory: Array<ShellCommand> = [];
+    // which command within the command history we're at
+    // null represents not having been at a command
+    public currentCommandIndex: number = null;
 
     constructor() {
       // ver
@@ -238,6 +187,36 @@ namespace TSOS {
       return completeCommand.slice(index);
     }
 
+    public previousCommand(): ShellCommand {
+      if (this.currentCommandIndex === null) {
+        // the latest command
+        this.currentCommandIndex = this.commandHistory.length - 1;
+        return this.commandHistory[this.currentCommandIndex];
+      }
+
+      if (this.currentCommandIndex === 0) {
+        // the first command, nothing previous to it
+        return;
+      }
+
+      // go to the previous one...
+      this.currentCommandIndex -= 1;
+      return this.commandHistory[this.currentCommandIndex];
+    }
+
+    public nextCommand(): ShellCommand {
+      if (this.currentCommandIndex === null) {
+        return; // there is no next command...
+      }
+      if (this.currentCommandIndex === this.commandHistory.length - 1) {
+        return; // also no next command ...
+      }
+
+      // go to the next one...
+      this.currentCommandIndex += 1;
+      return this.commandHistory[this.currentCommandIndex];
+    }
+
     public handleInput(buffer) {
       _Kernel.krnTrace("Shell Command~" + buffer);
 
@@ -255,7 +234,8 @@ namespace TSOS {
       if (maybeCommand.length === 1) {
         const command = maybeCommand[0];
         this.execute(command.func, args);
-        this.commandHistory.record(command);
+        this.commandHistory.push(command);
+        this.currentCommandIndex = null; // reset the index
       } else {
         // It's not found, so check for curses and apologies before declaring the command invalid.
         if (this.curses.indexOf("[" + Utils.rot13(cmd) + "]") >= 0) {
@@ -266,6 +246,7 @@ namespace TSOS {
           this.execute(this.shellApology);
         } else {
           // It's just a bad command. {
+          console.log(userCommand);
           this.execute(this.shellInvalidCommand);
         }
       }

@@ -51,7 +51,7 @@ namespace TSOS {
           this.backspace(deletedChar);
         }
 
-        const putNewCommand = (command: TSOS.ShellCommand) => {
+        const putNewCommand = (command: TSOS.ShellCommand): boolean => {
           if (!command) {
             return false;
           }
@@ -62,18 +62,22 @@ namespace TSOS {
         };
 
         if (chr === "↓") {
-          const command = _OsShell.commandHistory.scrubForward(1);
+          const command = _OsShell.nextCommand();
+          console.log("next", command);
           if (!putNewCommand(command)) {
             return;
           }
           this.buffer = command.command;
+          return;
         }
         if (chr === "↑") {
-          const command = _OsShell.commandHistory.scrubBackward(1);
+          const command = _OsShell.previousCommand();
+          console.log("previous", command);
           if (!putNewCommand(command)) {
             return;
           }
           this.buffer = command.command;
+          return;
         }
 
         if (chr === "\t") {
