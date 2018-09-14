@@ -246,7 +246,6 @@ namespace TSOS {
           this.execute(this.shellApology);
         } else {
           // It's just a bad command.
-          console.log(userCommand);
           this.execute(this.shellInvalidCommand);
         }
       }
@@ -405,6 +404,10 @@ namespace TSOS {
     }
 
     public shellAdd(args) {
+      if (args.length <= 0) {
+        _StdOut.putText("Please provide at least one integer argument to add.");
+        return;
+      }
       let hasInvalidArgument = false;
       const nums = args.map(arg => parseInt(arg));
       nums.forEach(num => {

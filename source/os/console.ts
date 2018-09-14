@@ -36,6 +36,13 @@ namespace TSOS {
     public handleInput(): void {
       while (_KernelInputQueue.getSize() > 0) {
         const chr = _KernelInputQueue.dequeue();
+        const fromCharCode = str => str.split("").map(s => s.charCodeAt(0));
+        console.log(
+          "buffer",
+          this.buffer,
+          this.buffer.length,
+          fromCharCode(this.buffer)
+        );
 
         // key is the input char, value is the function to be run on value
         const onInputVector = {
@@ -52,6 +59,7 @@ namespace TSOS {
           maybeOnMethod();
         } else {
           // This is a "normal" character
+          console.log("normal character", chr);
           this.putText(chr);
           this.buffer += chr;
         }
@@ -100,17 +108,12 @@ namespace TSOS {
 
       this.currentXPosition -= offset;
 
-      const tempStyle = _DrawingContext.fillStyle;
-      _DrawingContext.fillStyle = "#FFF"; // white, to erase
-
-      // + 5 because it doesn't look like it's actually the line height?
-      _DrawingContext.fillRect(
+      _DrawingContext.clearRect(
         this.currentXPosition,
-        this.currentYPosition - this.lineHeight() + 5,
+        this.currentYPosition - this.lineHeight() + _FontHeightMargin / 2,
         offset,
         this.lineHeight()
       );
-      _DrawingContext.fillStyle = tempStyle; // Leave No Trace (Boyscouts or serial killer, you decide)
 
       console.dir(this);
       console.dir(_DrawingContext);
@@ -119,7 +122,6 @@ namespace TSOS {
     private onBackspace = () => {
       // get the character to be deleted
       const deletedChar = this.buffer[this.buffer.length - 1];
-
       // remove the deleted character from the buffer
       this.buffer = this.buffer.substring(0, this.buffer.length - 1);
 
@@ -127,9 +129,10 @@ namespace TSOS {
     };
 
     private onTab = () => {
+      // autocomplete feature
       const restOfCompletedCommand = _OsShell.completeCommand(this.buffer);
       if (restOfCompletedCommand) {
-        this.putText(restOfCompletedCommand);
+        this.putText(restOfCompletedCommand + " ");
         this.buffer += restOfCompletedCommand + " ";
       }
     };
@@ -171,17 +174,18 @@ namespace TSOS {
 
     public advanceLine(): void {
       this.currentXPosition = 0;
-      /*
-             * Font size measures from the baseline to the highest point in the font.
-             * Font descent measures from the baseline to the lowest point in the font.
-             * Font height margin is extra spacing between the lines.
-             */
+
       this.currentYPosition += this.lineHeight();
 
       // TODO: Handle scrolling. (iProject 1)
     }
 
     private lineHeight(): number {
+      /*
+      * Font size measures from the baseline to the highest point in the font.
+      * Font descent measures from the baseline to the lowest point in the font.
+      * Font height margin is extra spacing between the lines.
+      */
       return (
         _DefaultFontSize +
         _DrawingContext.fontDescent(this.currentFont, this.currentFontSize) +
