@@ -82,6 +82,7 @@ namespace TSOS {
             this.putText(restOfCompletedCommand);
             this.buffer += restOfCompletedCommand + " ";
           }
+          return; // don't add \t to the buffer!
         }
 
         if (chr === String.fromCharCode(13)) {

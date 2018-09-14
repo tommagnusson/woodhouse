@@ -16,20 +16,17 @@
 namespace TSOS {
   // represents a history of commands for the shell
   class ScrubbableHistory {
-    // we initially start with no command entered (which itself must be represented as a command :/ )
-    private commands: Array<ShellCommand> = [
-      new ShellCommand(() => {}, "", "no command")
-    ];
+    // we initially start with no command entered
+    private commands: Array<ShellCommand> = [];
 
     // always the latest command added, unless scrubBackward/Forward called
     private scrubIndex: number = 0;
 
-    public latest(): ShellCommand {
-      if (!this.commands.length) {
-        return null;
-      }
-      this.scrubIndex = this.resetScrub();
-      return this.commands[this.scrubIndex];
+    private buffer: string = "";
+
+    // buffer - the initial text the user's initially entered but not pressed as a command
+    public constructor(buffer: string) {
+      this.buffer = buffer;
     }
 
     private resetScrub(): number {
