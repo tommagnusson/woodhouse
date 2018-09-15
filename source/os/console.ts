@@ -36,7 +36,6 @@ namespace TSOS {
     public handleInput(): void {
       while (_KernelInputQueue.getSize() > 0) {
         const chr = _KernelInputQueue.dequeue();
-        const fromCharCode = str => str.split("").map(s => s.charCodeAt(0));
 
         // key is the input char, value is the function to be run on value
         const onInputVector = {
@@ -167,7 +166,32 @@ namespace TSOS {
 
       this.currentYPosition += this.lineHeight();
 
-      // TODO: Handle scrolling. (iProject 1)
+      if (this.currentYPosition > _Canvas.height) {
+        // Simon says scroll it
+        this.scroll();
+      }
+    }
+
+    private scroll() {
+      // serialize entire existing screen
+      const imageData = _DrawingContext.getImageData(
+        0,
+        0,
+        _Canvas.width,
+        _Canvas.height
+      );
+
+      // clear the screen
+      this.clearScreen();
+
+      // draw the image data back up
+      _DrawingContext.putImageData(imageData, 0, -this.lineHeight());
+
+      // put the > back on the bottom line
+      this.currentXPosition = 0;
+      this.currentYPosition = _Canvas.height; // all the way at the bottom
+
+      //_DrawingContext.save();
     }
 
     private lineHeight(): number {
