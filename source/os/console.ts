@@ -189,9 +189,9 @@ namespace TSOS {
 
       // put the > back on the bottom line
       this.currentXPosition = 0;
-      this.currentYPosition = _Canvas.height; // all the way at the bottom
-
-      //_DrawingContext.save();
+      this.currentYPosition =
+        _Canvas.height -
+        _DrawingContext.fontDescent(this.currentFont, this.currentFontSize);
     }
 
     private lineHeight(): number {
