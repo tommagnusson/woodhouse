@@ -1,8 +1,13 @@
-Woodhouse: The most subservient operating system
-============================================
+# Woodhouse: The most subservient operating system
 
 This is the Operating Systems class initial project.
 See http://www.labouseur.com/courses/os/ for details.
+
+## Grading
+
+1. Clone the `iprojectN` branch where `N` is the project number
+1. Run `gulp`
+1. Open `index.html` in Chrome
 
 ## Setup TypeScript
 
@@ -15,12 +20,11 @@ See http://www.labouseur.com/courses/os/ for details.
 
 ## Setup Jest
 
+**No tests because triple slash imports don't run on Node**
+
 Jest is a Javascript testing framework for unit tests. To run the tests:
 
 1. Run `npm run test`
-
-> Tests are found in `__tests__` folders and are marked with `.test.ts` extension.
-
 
 ## Setup Gulp
 
