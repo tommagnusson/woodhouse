@@ -24,7 +24,7 @@ namespace TSOS {
       this.resetXY();
     }
 
-    private clearScreen(): void {
+    public clearScreen(): void {
       _DrawingContext.clearRect(0, 0, _Canvas.width, _Canvas.height);
     }
 
@@ -132,7 +132,7 @@ namespace TSOS {
       this.buffer = "";
     };
 
-    public putText(text): void {
+    public putText(text, color: string = "black"): void {
       // My first inclination here was to write two functions: putChar() and putString().
       // Then I remembered that JavaScript is (sadly) untyped and it won't differentiate
       // between the two.  So rather than be like PHP and write two (or more) functions that
@@ -149,7 +149,8 @@ namespace TSOS {
           this.currentFontSize,
           this.currentXPosition,
           this.currentYPosition,
-          text
+          text,
+          color
         );
         // Move the current X position.
         var offset = _DrawingContext.measureText(

@@ -30,6 +30,7 @@ namespace TSOS {
 
       // Get a global reference to the canvas.  TODO: Should we move this stuff into a Display Device Driver?
       _Canvas = <HTMLCanvasElement>document.getElementById("display");
+      _Canvas.style.backgroundColor = "white"; // reset perhaps from a BSOD
 
       // Get a global reference to the program input text area.
       _ProgramInput = <HTMLTextAreaElement>(

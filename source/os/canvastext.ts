@@ -145,7 +145,7 @@ module TSOS {
             return total;
         }
 
-        public static draw(ctx, font, size, x, y, str) {
+        public static draw(ctx, font, size, x, y, str, color = "black") {
             var total = 0;
             var len = str.length;
             var mag = size / 25.0;
@@ -153,7 +153,7 @@ module TSOS {
             ctx.save();
             ctx.lineCap = "round";
             ctx.lineWidth = 2.0 * mag;
-            ctx.strokeStyle = "black";
+            ctx.strokeStyle = color;
 
             for (var i = 0; i < len; i++) {
                 var c = CanvasTextFunctions.letter(str.charAt(i));
@@ -184,7 +184,7 @@ module TSOS {
         }
 
         public static enable(ctx) {
-            ctx.drawText = function(font,size,x,y,text) { return CanvasTextFunctions.draw( ctx, font,size,x,y,text); };
+            ctx.drawText = function(font,size,x,y,text, color) { return CanvasTextFunctions.draw( ctx, font,size,x,y,text, color); };
             ctx.measureText = function(font,size,text) { return CanvasTextFunctions.measure( font,size,text); };
             ctx.fontAscent = function(font,size) { return CanvasTextFunctions.ascent(font,size); };
             ctx.fontDescent = function(font,size) { return CanvasTextFunctions.descent(font,size); };
