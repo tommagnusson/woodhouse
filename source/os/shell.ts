@@ -138,6 +138,14 @@ namespace TSOS {
         )
       );
 
+      this.commandList.push(
+        new ShellCommand(
+          this.shellLoad,
+          "load",
+          "- Loads a user program from the input area."
+        )
+      );
+
       // ps  - list the running processes and their IDs
       // kill <id> - kills the specified process id.
 
@@ -423,5 +431,26 @@ namespace TSOS {
 
       _StdOut.putText(`${nums.reduce((n1, n2) => n1 + n2)}`);
     }
+
+    // makes sure the program is in hex and spaces
+    private isValidProgram = (programText: string): boolean => {
+      // crafted using https://regex101.com/
+      const validProgramRegexPattern = /^(?:(?:[0-9a-fA-F]{2})+\s?)+$/gm;
+      // [0-9a-fA-F]{2}+ Any group of two 0-9 or case insensitive a-f, 1 or more times
+      // followed by an optional whitespace character
+
+      // match returns an array or null, which we map to true or false
+      return programText.match(validProgramRegexPattern) ? true : false;
+    };
+
+    private shellLoad = args => {
+      const program = _ProgramInput.value;
+      if (this.isValidProgram(program)) {
+        _StdOut.putText("Nice program you have there.");
+      } else {
+        // error message
+        _StdOut.putText("Whoops, looks like you entered an invalid program.");
+      }
+    };
   }
 }
