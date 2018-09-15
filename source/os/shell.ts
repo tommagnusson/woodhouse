@@ -461,13 +461,15 @@ namespace TSOS {
       }
     };
 
-    private shellCrash = args => {
+    public shellCrash = (args?) => {
       _Console.clearScreen();
       _Canvas.style.backgroundColor = "blue";
       _StdOut.init();
       _StdOut.putText("Terribly sorry to interrupt...", "white");
       _StdOut.advanceLine();
       _StdOut.putText("It seems something unthinkable has happened!", "white");
+      _StdOut.advanceLine();
+      _StdOut.putText("I have to shut this off, terribly sorry.", "white");
       _Kernel.krnShutdown();
     };
   }

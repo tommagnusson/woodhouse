@@ -133,8 +133,7 @@ namespace TSOS {
       Control.hostLog("Attempting Kernel shutdown.", "host");
       // Call the OS shutdown routine.
       _Kernel.krnShutdown();
-      // Stop the interval that's simulating our clock pulse.
-      clearInterval(_hardwareClockID);
+
       // TODO: Is there anything else we need to do here?
     }
 

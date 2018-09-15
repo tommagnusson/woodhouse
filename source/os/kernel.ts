@@ -70,6 +70,8 @@ namespace TSOS {
       // More?
       //
       this.krnTrace("end shutdown OS");
+      // Stop the interval that's simulating our clock pulse.
+      clearInterval(_hardwareClockID);
     }
 
     public krnOnCPUClockPulse() {
@@ -173,8 +175,7 @@ namespace TSOS {
 
     public krnTrapError(msg) {
       Control.hostLog("OS ERROR - TRAP: " + msg);
-      // TODO: Display error on console, perhaps in some sort of colored screen. (Maybe blue?)
-      this.krnShutdown();
+      _OsShell.shellCrash();
     }
   }
 }
