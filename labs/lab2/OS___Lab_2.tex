@@ -1,0 +1,22 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\title{OS - Lab 2}
+\author{Thomas Magnusson }
+\date{16 September 2018}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+
+\begin{document}
+
+\maketitle
+
+\section{Unix TTY vs. Woodhouse Console}
+The first most general comparison between the ancient Unix TTY and my OS's console is the primitive level on which they operate, as well as the even more primitive details they attempt to abstract. The TTY, for example, handles user input from devices providing it, connected through drivers such as a keyboard driver. The Woodhouse console has a very similar process, using the OS's input queue (enqueued via the Keyboard device driver) to provide primitive text functions such as \texttt{newline} and \texttt{backspace}. The TTY system as described in the article provided similar functionality from the \texttt{N\_TTY} line discipline.
+
+The Woodhouse console also is the interface to the drawing context for the \texttt{canvas}, which emulates a VGA driver interface in the Linux TTY ecosystem.
+
+I would say that the console is most similar to Unix's \texttt{N\_TTY} line discipline and the Display Driver modules of the TTY subsystem.
+
+\end{document}
