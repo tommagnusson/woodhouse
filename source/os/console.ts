@@ -69,22 +69,20 @@ namespace TSOS {
       return true;
     }
 
-    private onDownArrow = () => {
-      const command = _OsShell.nextCommand();
+    private onArrow = upOrDownFn => {
+      const command = upOrDownFn;
       if (!this.putNewCommand(command)) {
         return;
       }
       this.buffer = command.command;
-      return;
+    };
+
+    private onDownArrow = () => {
+      this.onArrow(_OsShell.nextCommand());
     };
 
     private onUpArrow = () => {
-      const command = _OsShell.previousCommand();
-      if (!this.putNewCommand(command)) {
-        return;
-      }
-      this.buffer = command.command;
-      return;
+      this.onArrow(_OsShell.previousCommand());
     };
 
     public backspace = (prevChar?: string): void => {
