@@ -5,7 +5,11 @@ describe("Memory", () => {
   let mem: Memory;
 
   beforeEach(() => {
-    mem = new Memory();
+    const raw = [];
+    for (let i = 0; i < 256; i++) {
+      raw[i] = "00";
+    }
+    mem = new Memory(raw);
   });
 
   test("is initialized with 256 `00` values", () => {

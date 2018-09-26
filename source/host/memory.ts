@@ -2,8 +2,10 @@ export default class Memory {
   public static SIZE_BYTES = 256;
 
   constructor(private raw: Array<string> = []) {
-    for (let i = 0; i < Memory.SIZE_BYTES; i++) {
-      this.raw[i] = "00";
+    if (raw.length !== 0) {
+      for (let i = 0; i < Memory.SIZE_BYTES; i++) {
+        this.raw[i] = "00";
+      }
     }
   }
 

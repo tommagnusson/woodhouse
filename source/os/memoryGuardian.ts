@@ -8,6 +8,10 @@ export default class MemoryGuardian {
   private currentPID = 0;
   private activeProcesses: Array<ProcessControlBlock> = [];
 
+  constructor(memory: Memory) {
+    this.memory = memory;
+  }
+
   // TODO: create Process Control Block
   public load(program: string): number {
     const parsedProgram = MemoryGuardian.parseProgram(program);
@@ -16,7 +20,7 @@ export default class MemoryGuardian {
 
     // write it into memory
     for (let i = 0; i < parsedProgram.length; i++) {
-      this.memory.write(0, i, parsedProgram[i]);
+      this.memory.write(i.toString(16), parsedProgram[i]);
     }
 
     // TODO: dynamic segment allocation (change the segment 0 to dynamic)
