@@ -1,11 +1,9 @@
 export default class Memory {
-  public static SIZE_BYTES = 256;
+  private raw: Array<string> = [];
 
-  constructor(private raw: Array<string> = []) {
-    if (raw.length !== 0) {
-      for (let i = 0; i < Memory.SIZE_BYTES; i++) {
-        this.raw[i] = "00";
-      }
+  constructor(public readonly sizeInBytes = 256) {
+    for (let i = 0; i < sizeInBytes; i++) {
+      this.raw[i] = "00";
     }
   }
 
@@ -22,7 +20,7 @@ export default class Memory {
 
   private checkBounds(location: string) {
     const decLocation = parseInt(location, 16);
-    if (decLocation >= Memory.SIZE_BYTES || decLocation < 0) {
+    if (decLocation >= this.sizeInBytes || decLocation < 0) {
       throw new Error(`Location ${location} (${decLocation}) does not exist.`);
     }
   }

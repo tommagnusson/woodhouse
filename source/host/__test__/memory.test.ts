@@ -1,15 +1,11 @@
 import "jest";
-import Memory from "../../host/memory";
+import Memory from "../memory";
 
 describe("Memory", () => {
   let mem: Memory;
 
   beforeEach(() => {
-    const raw = [];
-    for (let i = 0; i < 256; i++) {
-      raw[i] = "00";
-    }
-    mem = new Memory(raw);
+    mem = new Memory(256);
   });
 
   test("is initialized with 256 `00` values", () => {
@@ -17,6 +13,7 @@ describe("Memory", () => {
     expect(start).toEqual("00");
     const end = mem.read("FF");
     expect(end).toEqual("00");
+    expect(mem.sizeInBytes).toEqual(256);
     expect(() => {
       // 256
       mem.read("0100");

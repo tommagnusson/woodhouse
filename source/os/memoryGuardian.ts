@@ -1,30 +1,55 @@
 import Memory from "../host/memory";
+import Segment from "./segment";
 import ProcessControlBlock from "./processControlBlock";
 
 // it's a memory manager, but cooler
 export default class MemoryGuardian {
+  static readonly NUM_SEGMENTS = 1;
   private memory: Memory;
 
   private currentPID = 0;
-  private activeProcesses: Array<ProcessControlBlock> = [];
+  private processes: Map<number, ProcessControlBlock> = new Map();
+  public segmentToIsOccupied: Map<Segment, boolean> = new Map();
+  public segments: Array<Segment> = [];
 
   constructor(memory: Memory) {
     this.memory = memory;
+    const segmentSize = this.memory.sizeInBytes / MemoryGuardian.NUM_SEGMENTS;
+    // compute the base and limit for each segment
+    // This is fixed-size allocation
+    for (let i = 0; i < MemoryGuardian.NUM_SEGMENTS; i++) {
+      const base = i * segmentSize;
+      const limit = base + segmentSize - 1;
+      const newSegment = new Segment(base.toString(16), limit.toString(16));
+      this.segments.push(newSegment);
+      this.segmentToIsOccupied.set(newSegment, false);
+    }
   }
 
-  // TODO: create Process Control Block
   public load(program: string): number {
     const parsedProgram = MemoryGuardian.parseProgram(program);
 
-    // prepares it for passage to the memory...
+    // find the first available segment from memory
+    const firstAvailableSegment = Array.from(
+      this.segmentToIsOccupied.keys()
+    ).find(segment => this.segmentToIsOccupied.get(segment));
+
+    if (firstAvailableSegment === undefined) {
+      throw new Error(`There is not enough memory to load a new program.`);
+    }
 
     // write it into memory
-    for (let i = 0; i < parsedProgram.length; i++) {
+    const base = parseInt(firstAvailableSegment.base, 16);
+    const limit = parseInt(firstAvailableSegment.limit, 16);
+    for (let i = base; i < limit + 1; i++) {
       this.memory.write(i.toString(16), parsedProgram[i]);
     }
 
-    // TODO: dynamic segment allocation (change the segment 0 to dynamic)
-    this.activeProcesses.push(new ProcessControlBlock(this.currentPID, 0));
+    // map the PID to the PCB
+    this.processes.set(
+      this.currentPID,
+      new ProcessControlBlock(this.currentPID, firstAvailableSegment)
+    );
 
     return this.currentPID++;
   }
