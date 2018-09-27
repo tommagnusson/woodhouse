@@ -7,8 +7,8 @@ export default class MemoryGuardian {
   static readonly NUM_SEGMENTS = 1;
   private memory: Memory;
 
-  private currentPID = 0;
-  private processes: Map<number, ProcessControlBlock> = new Map();
+  private currentPID = 1;
+  public processes: Map<number, ProcessControlBlock> = new Map();
   public segmentToIsOccupied: Map<Segment, boolean> = new Map();
   public segments: Array<Segment> = [];
 
@@ -32,7 +32,7 @@ export default class MemoryGuardian {
     // find the first available segment from memory
     const firstAvailableSegment = Array.from(
       this.segmentToIsOccupied.keys()
-    ).find(segment => this.segmentToIsOccupied.get(segment));
+    ).find(segment => !this.segmentToIsOccupied.get(segment));
 
     if (firstAvailableSegment === undefined) {
       throw new Error(`There is not enough memory to load a new program.`);
@@ -44,6 +44,9 @@ export default class MemoryGuardian {
     for (let i = base; i < limit + 1; i++) {
       this.memory.write(i.toString(16), parsedProgram[i]);
     }
+
+    // mark the segment as occupied
+    this.segmentToIsOccupied.set(firstAvailableSegment, true);
 
     // map the PID to the PCB
     this.processes.set(
