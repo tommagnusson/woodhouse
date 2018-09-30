@@ -57,6 +57,10 @@ export default class MemoryGuardian {
     return this.currentPID++;
   }
 
+  public read(location: string): string {
+    return this.memory.read(location);
+  }
+
   // converts a valid program to an array of hex strings
   public static parseProgram(program: string): Array<string> {
     // strip whitespace

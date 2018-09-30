@@ -1,3 +1,6 @@
+import OpCode from "./opcode";
+import MemoryGuardian from "../os/memoryGuardian";
+
 ///<reference path="../globals.ts" />
 
 /* ------------
@@ -23,7 +26,8 @@ namespace TSOS {
       public Xreg: number = 0,
       public Yreg: number = 0,
       public Zflag: number = 0,
-      public isExecuting: boolean = false
+      public isExecuting: boolean = false,
+      private memory: MemoryGuardian
     ) {}
 
     public init(): void {
@@ -46,7 +50,10 @@ namespace TSOS {
     // TODO: STA and LDA operations
 
     private execute(instruction): void {
-      // read instruction
+      const opcode = new OpCode(instruction);
+      // fetch next n args
+
+      const args = this.fetch(opcode.numArgs);
     }
   }
 }
