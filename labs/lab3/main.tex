@@ -19,7 +19,7 @@ Internal refers to the leftover space within a partition, while external refers 
 
 \section{Given	Five	(5)	memory	partitions	of	100KB,	500KB,	200KB,	300KB,	and	600KB	(in	that	
 order),	how	would	optimal,	First-Fit,	best-Fit,	and	worst-Fit	algorithms	place	processes	
-of	212KB,	417KB,	112KB,	and	426KB	(in	that	order)?}
+of	212KB (A),	417KB (B),	112KB (C),	and	426KB (D)	(in	that	order)?}
 
 Assuming none of the processes are allowed to switch places:
 
@@ -27,10 +27,10 @@ Assuming none of the processes are allowed to switch places:
   \begin{tabular}{ l | c | c | c | c | c | r }
     \hline
     \textbf{Algorithm} & \textbf{100KB} & \textbf{500KB} & \textbf{200KB} & \textbf{300KB} & \textbf{600KB} & \textbf{Out of Memory?}\\ \hline
-    Optimal & N/A & 417KB & 112KB & 212KB & 426KB & false \\ \hline
-    First-Fit & N/A & 212KB & 112KB & N/A & 417 & true, 426KB \\ \hline
-    Best-Fit & N/A & 417KB & 112KB & 212KB & 426KB & false \\ \hline
-    Worst-Fit & N/A & 417KB & 112KB & N/A & 212KB & true, 426KB \\ \hline
+    Optimal & N/A & D & C & A & B & false \\ \hline
+    First-Fit & N/A & A + C & N/A & N/A & B & true, D \\ \hline
+    Best-Fit & N/A & B & C & A & D & false \\ \hline
+    Worst-Fit & N/A & B & N/A & N/A & A + C & true, D \\ \hline
   \end{tabular}
 \end{center}
 
