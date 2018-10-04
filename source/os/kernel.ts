@@ -115,36 +115,40 @@ namespace TSOS {
       // Trace our entrance here so we can compute Interrupt Latency by analyzing the log file later on. Page 766.
       this.krnTrace("Handling IRQ~" + irq);
 
-      // Invoke the requested Interrupt Service Routine via Switch/Case rather than an Interrupt Vector.
-      // TODO: Consider using an Interrupt Vector in the future.
-      // Note: There is no need to "dismiss" or acknowledge the interrupts in our design here.
-      //       Maybe the hardware simulation will grow to support/require that in the future.
-      switch (irq) {
-        case TIMER_IRQ:
-          this.krnTimerISR(); // Kernel built-in routine for timers (not the clock).
-          break;
-        case KEYBOARD_IRQ:
+      const interruptVector = {
+        [TIMER_IRQ]: this.krnTimerISR,
+        [KEYBOARD_IRQ]: () => {
           _krnKeyboardDriver.isr(params); // Kernel mode device driver
           _StdIn.handleInput();
-          break;
-        case LOAD_PROGRAM_IRQ:
+        },
+        [LOAD_PROGRAM_IRQ]: () => {
           this.onLoadProgram(params[0]);
-        default:
-          this.krnTrapError(
-            "Invalid Interrupt Request. irq=" + irq + " params=[" + params + "]"
-          );
+        }
+      };
+
+      const maybeFn = interruptVector[irq];
+      if (maybeFn) {
+        maybeFn();
+      } else {
+        this.krnTrapError(
+          "Invalid Interrupt Request. irq=" + irq + " params=[" + params + "]"
+        );
       }
     }
     // expects tokenized array of 2 digit hex strings
     private onLoadProgram(program: string) {
       try {
-        _MemoryGuardian.load(program);
+        const pid = _MemoryGuardian.load(program);
+        _StdOut.backspace();
+        _StdOut.putText(`Process created with PID ${pid}`);
+        _OsShell.putPrompt();
       } catch (err) {
         this.krnTrapError(err.message);
       }
     }
 
     public krnTimerISR() {
+      console.log("timer");
       // The built-in TIMER (not clock) Interrupt Service Routine (as opposed to an ISR coming from a device driver). {
       // Check multiprogramming parameters and enforce quanta here. Call the scheduler / context switch here if necessary.
     }

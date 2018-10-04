@@ -52,7 +52,7 @@ namespace TSOS {
         this.currentPID,
         new ProcessControlBlock(this.currentPID, firstAvailableSegment)
       );
-
+      // console.log(this.memory.dangerouslyExposeRaw());
       return this.currentPID++;
     }
 

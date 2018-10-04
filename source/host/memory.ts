@@ -8,6 +8,12 @@ namespace TSOS {
       }
     }
 
+    // used for GUI updates and logging
+    // this IS purely a classroom assignment, after all
+    public dangerouslyExposeRaw(): Array<string> {
+      return this.raw;
+    }
+
     public read(location: string): string {
       this.checkBounds(location);
       return this.raw[parseInt(location, 16)];
