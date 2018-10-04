@@ -139,11 +139,10 @@ namespace TSOS {
     private onLoadProgram(program: string) {
       try {
         const pid = _MemoryGuardian.load(program);
-        _StdOut.backspace();
-        _StdOut.putText(`Process created with PID ${pid}`);
-        _OsShell.putPrompt();
+
+        _OsShell.putSystemText(`Process created with PID ${pid}`);
       } catch (err) {
-        this.krnTrapError(err.message);
+        _OsShell.putSystemText(err.message);
       }
     }
 

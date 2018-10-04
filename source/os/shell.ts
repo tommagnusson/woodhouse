@@ -464,6 +464,13 @@ namespace TSOS {
       }
     };
 
+    public putSystemText(text: string): void {
+      _StdOut.backspace(_OsShell.promptStr);
+      _StdOut.putText(text);
+      _StdOut.advanceLine();
+      _OsShell.putPrompt();
+    }
+
     public shellCrash = (args?) => {
       _Console.clearScreen();
       _Canvas.style.backgroundColor = "blue";
