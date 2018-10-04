@@ -127,10 +127,20 @@ namespace TSOS {
           _krnKeyboardDriver.isr(params); // Kernel mode device driver
           _StdIn.handleInput();
           break;
+        case LOAD_PROGRAM_IRQ:
+          this.onLoadProgram(params[0]);
         default:
           this.krnTrapError(
             "Invalid Interrupt Request. irq=" + irq + " params=[" + params + "]"
           );
+      }
+    }
+    // expects tokenized array of 2 digit hex strings
+    private onLoadProgram(program: string) {
+      try {
+        _MemoryGuardian.load(program);
+      } catch (err) {
+        this.krnTrapError(err.message);
       }
     }
 

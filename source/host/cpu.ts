@@ -1,6 +1,5 @@
-import OpCode from "./opcode";
-import MemoryGuardian from "../os/memoryGuardian";
-
+///<reference path="./opcode.ts"/>
+///<reference path="../os/memoryGuardian"/>
 ///<reference path="../globals.ts" />
 
 /* ------------
@@ -26,8 +25,7 @@ namespace TSOS {
       public Xreg: number = 0,
       public Yreg: number = 0,
       public Zflag: number = 0,
-      public isExecuting: boolean = false,
-      private memory: MemoryGuardian
+      public isExecuting: boolean = false
     ) {}
 
     public init(): void {
@@ -53,7 +51,7 @@ namespace TSOS {
       const opcode = new OpCode(instruction);
       // fetch next n args
 
-      const args = this.fetch(opcode.numArgs);
+      //const args = this.fetch(opcode.numArgs);
     }
   }
 }

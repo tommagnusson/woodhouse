@@ -1,10 +1,12 @@
-import ProcessControlBlock from "./processControlBlock";
+///<reference path="./processControlBlock.ts"/>
 
-export default class Scheduler {
-  readonly readyQueue: Array<ProcessControlBlock> = [];
-  constructor() {}
+namespace TSOS {
+  export class Scheduler {
+    readonly readyQueue: Array<ProcessControlBlock> = [];
+    constructor() {}
 
-  public pushReadyProgram(pcb: ProcessControlBlock) {
-    this.readyQueue.push(pcb);
+    public pushReadyProgram(pcb: ProcessControlBlock) {
+      this.readyQueue.push(pcb);
+    }
   }
 }

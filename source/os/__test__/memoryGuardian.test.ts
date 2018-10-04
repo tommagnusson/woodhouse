@@ -1,8 +1,8 @@
-import "jest";
-import MemoryGuardian from "../memoryGuardian";
-import Memory from "../../host/memory";
-import Segment from "../segment";
-import ProcessControlBlock from "../processControlBlock";
+///<reference types="jest"/>
+///<reference path="../memoryGuardian.ts"/>
+///<reference path="../../host/memory.ts"/>
+///<reference path="../segment.ts"/>
+///<reference path="../processControlBlock.ts"/>
 
 describe("memory guardian", () => {
   const validProgram = `A9 A9 A2 01 EC 13 00 AC 0B 00 8D 14 00 EE 0B 00 
@@ -12,12 +12,12 @@ describe("memory guardian", () => {
   let guardian;
 
   beforeEach(() => {
-    mem = new Memory(256);
-    guardian = new MemoryGuardian(mem);
+    mem = new TSOS.Memory(256);
+    guardian = new TSOS.MemoryGuardian(mem);
   });
 
   test("parses a valid program", () => {
-    const result = MemoryGuardian.parseProgram(validProgram);
+    const result = TSOS.MemoryGuardian.parseProgram(validProgram);
     expect(result).toEqual([
       "A9",
       "A9",
@@ -43,7 +43,7 @@ describe("memory guardian", () => {
   });
 
   test("creates segments appropriately", () => {
-    const expectedSegment = new Segment("0", "ff");
+    const expectedSegment = new TSOS.Segment("0", "ff");
 
     // creates a new segment
     expect(guardian.segments).toEqual([expectedSegment]);
@@ -67,7 +67,7 @@ describe("memory guardian", () => {
     );
     // created a process control block
     expect(guardian.processes.get(pid)).toEqual(
-      new ProcessControlBlock(pid, guardian.segments[0])
+      new TSOS.ProcessControlBlock(pid, guardian.segments[0])
     );
   });
 

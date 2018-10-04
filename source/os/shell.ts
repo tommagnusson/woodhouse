@@ -455,6 +455,7 @@ namespace TSOS {
       const program = _ProgramInput.value;
       if (this.isValidProgram(program)) {
         _StdOut.putText("Nice program you have there.");
+        _KernelInterruptQueue.push(new Interrupt(LOAD_PROGRAM_IRQ, [program]));
       } else {
         // error message
         _StdOut.putText("Whoops, looks like you entered an invalid program.");
