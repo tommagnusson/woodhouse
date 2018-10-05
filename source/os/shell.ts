@@ -154,6 +154,14 @@ namespace TSOS {
         )
       );
 
+      this.commandList.push(
+        new ShellCommand(
+          this.shellRun,
+          "run",
+          "<pid> - runs the given pid in memory"
+        )
+      );
+
       // ps  - list the running processes and their IDs
       // kill <id> - kills the specified process id.
 
@@ -250,6 +258,7 @@ namespace TSOS {
       if (maybeCommand.length === 1) {
         const command = maybeCommand[0];
         this.execute(command.func, args);
+        command.arguments = args;
         this.commandHistory.push(command);
         this.currentCommandIndex = null; // reset the index
       } else {
@@ -481,6 +490,14 @@ namespace TSOS {
       _StdOut.advanceLine();
       _StdOut.putText("I have to shut this off, terribly sorry.", "white");
       _Kernel.krnShutdown();
+    };
+
+    public shellRun = args => {
+      if (args.length !== 1) {
+        _StdOut.putText("Please provide a single PID as an argument.");
+        return;
+      }
+      _KernelInterruptQueue.enqueue(new Interrupt(RUN_PROGRAM_IRQ, args));
     };
   }
 }

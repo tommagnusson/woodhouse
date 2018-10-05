@@ -20,6 +20,7 @@ const TIMER_IRQ: number = 0; // Pages 23 (timer), 9 (interrupts), and 561 (inter
 // NOTE: The timer is different from hardware/host clock pulses. Don't confuse these.
 const KEYBOARD_IRQ: number = 1;
 const LOAD_PROGRAM_IRQ: number = 2;
+const RUN_PROGRAM_IRQ: number = 3;
 
 //
 // Global Variables

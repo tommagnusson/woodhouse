@@ -65,7 +65,7 @@ namespace TSOS {
       }
       _StdOut.advanceLine();
       _OsShell.putPrompt();
-      _StdOut.putText(command.command);
+      _StdOut.putText(command.command + " " + command.arguments.join(" "));
       return true;
     }
 
@@ -74,7 +74,7 @@ namespace TSOS {
       if (!this.putNewCommand(command)) {
         return;
       }
-      this.buffer = command.command;
+      this.buffer = command.command + " " + command.arguments.join(" ");
     };
 
     private onDownArrow = () => {

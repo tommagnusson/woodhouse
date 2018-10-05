@@ -137,6 +137,9 @@ namespace TSOS {
         },
         [LOAD_PROGRAM_IRQ]: () => {
           this.onLoadProgram(params[0]);
+        },
+        [RUN_PROGRAM_IRQ]: () => {
+          this.onRunProgram(params[0]);
         }
       };
 
@@ -158,6 +161,20 @@ namespace TSOS {
       } catch (err) {
         _OsShell.putSystemText(err.message);
       }
+    }
+
+    private onRunProgram(pid: number) {
+      const isValidPid = Array.from(_MemoryGuardian.processes.keys()).some(
+        key => key === pid
+      );
+      if (!isValidPid) {
+        // uh oh...
+        _OsShell.putSystemText(
+          `PID ${pid} is invalid. Try running a PID of a process loaded into memory.`
+        );
+        return;
+      }
+      _OsShell.putSystemText(`Nice PID.`);
     }
 
     public krnTimerISR() {
