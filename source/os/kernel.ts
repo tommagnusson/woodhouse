@@ -1,6 +1,7 @@
 ///<reference path="../globals.ts" />
 ///<reference path="queue.ts" />
 ///<reference path="../host/control.ts"/>
+///<reference path="./scheduler.ts"/>
 
 /* ------------
      Kernel.ts
@@ -54,6 +55,8 @@ namespace TSOS {
       this.krnTrace("Creating and Launching the shell.");
       _OsShell = new Shell();
 
+      _Scheduler = new Scheduler();
+
       // hook up the memory
       this.krnDisplayMemory();
       this.krnDisplayCPU();
@@ -92,10 +95,10 @@ namespace TSOS {
         var interrupt = _KernelInterruptQueue.dequeue();
         this.krnInterruptHandler(interrupt.irq, interrupt.params);
       } else if (_CPU.isExecuting) {
-        // If there are no interrupts then run one CPU cycle if there is anything being processed. {
+        // If there are no interrupts then run one CPU cycle if there is anything being processed
         _CPU.cycle();
       } else {
-        // If there are no interrupts and there is nothing being executed then just be idle. {
+        // If there are no interrupts and there is nothing being executed then just be idle.
         this.krnTrace("Idle");
       }
     }
@@ -163,9 +166,9 @@ namespace TSOS {
       }
     }
 
-    private onRunProgram(pid: number) {
+    private onRunProgram(pid) {
       const isValidPid = Array.from(_MemoryGuardian.processes.keys()).some(
-        key => key === pid
+        key => key === parseInt(pid)
       );
       if (!isValidPid) {
         // uh oh...
@@ -175,6 +178,7 @@ namespace TSOS {
         return;
       }
       _OsShell.putSystemText(`Nice PID.`);
+      _CPU.isExecuting = true;
     }
 
     public krnTimerISR() {

@@ -1,6 +1,8 @@
 ///<reference path="./opcode.ts"/>
 ///<reference path="../os/memoryGuardian"/>
 ///<reference path="../globals.ts" />
+///<reference path="../os/scheduler.ts"/>
+///<reference path="./control.ts"/>
 
 /* ------------
      CPU.ts
@@ -39,19 +41,48 @@ namespace TSOS {
 
     public cycle(): void {
       _Kernel.krnTrace("CPU cycle");
+      // look at scheduler to see which process we run
+      if (!_Scheduler.executing) {
+        // get the next one out of the ready queue
+        _Scheduler.executing = _Scheduler.readyQueue.dequeue();
+      }
 
-      this.isExecuting = true;
+      const location = this.PC;
 
-      // TODO: Accumulate CPU usage and profiling statistics here.
-      // Do the real work here. Be sure to set this.isExecuting appropriately.
+      // look at the memory guardian to get the next instruction
+      const rawInstruction = _MemoryGuardian.read(location.toString(16));
+      const opCode = new OpCode(rawInstruction);
+
+      // lookahead based on args to instructions
+      for (let i = 0; i < opCode.numArgs; i++) {
+        this.PC++;
+        opCode.args.push(_MemoryGuardian.read(this.PC.toString(16)));
+      }
+      // execute that shit
+      this.execute(opCode);
+      Control.displayCPU(
+        this.PC,
+        opCode.code,
+        this.Acc,
+        this.Xreg,
+        this.Yreg,
+        this.Zflag
+      );
+
+      this.PC++;
     }
     // TODO: STA and LDA operations
 
-    private execute(instruction): void {
-      const opcode = new OpCode(instruction);
-      // fetch next n args
-
-      //const args = this.fetch(opcode.numArgs);
+    private execute(opCode: OpCode): void {
+      switch (opCode.mnemonic) {
+        case "LDA":
+          this.Acc = opCode.args[0];
+          break;
+        case "BRK":
+          _CPU.isExecuting = false;
+        default:
+          _CPU.isExecuting = false;
+      }
     }
   }
 }

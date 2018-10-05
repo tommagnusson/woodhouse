@@ -1,12 +1,11 @@
 ///<reference path="./processControlBlock.ts"/>
+///<reference path="./queue.ts"/>
 
 namespace TSOS {
   export class Scheduler {
-    readonly readyQueue: Array<ProcessControlBlock> = [];
-    constructor() {}
+    readonly readyQueue: Queue = new Queue();
+    public executing: ProcessControlBlock = null;
 
-    public pushReadyProgram(pcb: ProcessControlBlock) {
-      this.readyQueue.push(pcb);
-    }
+    constructor() {}
   }
 }

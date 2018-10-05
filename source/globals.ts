@@ -29,6 +29,7 @@ const RUN_PROGRAM_IRQ: number = 3;
 var _Memory: TSOS.Memory;
 var _MemoryGuardian: TSOS.MemoryGuardian;
 var _CPU: TSOS.Cpu; // Utilize TypeScript's type annotation system to ensure that _CPU is an instance of the Cpu class.
+var _Scheduler: TSOS.Scheduler;
 
 var _OSclock: number = 0; // Page 23.
 
