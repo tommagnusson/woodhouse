@@ -3,6 +3,7 @@
 ///<reference path="./cpu.ts"/>
 ///<reference path="./memory.ts"/>
 ///<reference path="../os/memoryGuardian.ts"/>
+///<reference path="../os/processControlBlock.ts"/>
 
 /* ------------
      Control.ts
@@ -148,8 +149,22 @@ namespace TSOS {
       // page from its cache, which is not what we want.
     }
 
+    public static displayCPU(counter, instruction, accumulator, x, y, z) {
+      const cpuDisplayIdToValue = {
+        cpuCounter: counter,
+        cpuInstruction: instruction,
+        cpuAccumulator: accumulator,
+        cpuX: x,
+        cpuY: y,
+        cpuZ: z
+      };
+      for (let key of Object.keys(cpuDisplayIdToValue)) {
+        document.getElementById(key).textContent = cpuDisplayIdToValue[key];
+      }
+    }
+
     public static displayMemory(memory: string[]) {
-      const memoryTable = document.querySelector(".memory table");
+      const memoryTable = document.querySelector(".memory table tbody");
 
       // clear existing garbage in there
       while (memoryTable.firstChild) {

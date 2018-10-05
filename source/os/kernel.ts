@@ -56,6 +56,7 @@ namespace TSOS {
 
       // hook up the memory
       this.krnDisplayMemory();
+      this.krnDisplayCPU();
 
       // Finally, initiate student testing protocol.
       if (_GLaDOS) {
@@ -117,6 +118,10 @@ namespace TSOS {
     public krnDisplayMemory() {
       // the kernel can do what it wants with raw memory
       Control.displayMemory(_Memory.dangerouslyExposeRaw());
+    }
+
+    public krnDisplayCPU() {
+      Control.displayCPU("-", "--", "-", "-", "-", "-");
     }
 
     public krnInterruptHandler(irq, params) {
