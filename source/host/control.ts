@@ -47,11 +47,9 @@ namespace TSOS {
       CanvasTextFunctions.enable(_DrawingContext); // Text functionality is now built in to the HTML5 canvas. But this is old-school, and fun, so we'll keep it.
 
       // Clear the log text box.
-      // Use the TypeScript cast to HTMLInputElement
       (<HTMLInputElement>document.getElementById("taHostLog")).value = "";
 
       // Set focus on the start button.
-      // Use the TypeScript cast to HTMLInputElement
       (<HTMLInputElement>document.getElementById("btnStartOS")).focus();
 
       // updates the time and status
@@ -148,6 +146,37 @@ namespace TSOS {
       // That boolean parameter is the 'forceget' flag. When it is true it causes the page to always
       // be reloaded from the server. If it is false or not specified the browser may reload the
       // page from its cache, which is not what we want.
+    }
+
+    public static displayMemory(memory: string[]) {
+      const memoryTable = document.querySelector(".memory table");
+
+      // clear existing garbage in there
+      while (memoryTable.firstChild) {
+        memoryTable.removeChild(memoryTable.firstChild);
+      }
+
+      // break into bytes
+      for (let location = 0; location < memory.length; location += 8) {
+        const byte = memory.slice(location, location + 8);
+
+        const byteRow = document.createElement("tr");
+
+        const addressLabel = document.createElement("th");
+        addressLabel.setAttribute("scope", "row");
+        addressLabel.textContent = `0x${location.toString(16)}`;
+
+        byteRow.appendChild(addressLabel);
+
+        for (let i = 0; i < byte.length; i++) {
+          const bit = byte[i];
+          const bitCell = document.createElement("td");
+          bitCell.setAttribute("id", `location${location + i}`);
+          bitCell.textContent = bit;
+          byteRow.appendChild(bitCell);
+        }
+        memoryTable.appendChild(byteRow);
+      }
     }
   }
 }

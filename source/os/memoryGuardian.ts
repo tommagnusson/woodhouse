@@ -7,7 +7,7 @@ namespace TSOS {
   export class MemoryGuardian {
     static readonly NUM_SEGMENTS = 1;
 
-    private currentPID = 1;
+    private currentPID = 0;
     public processes: Map<number, ProcessControlBlock> = new Map();
     public segmentToIsOccupied: Map<Segment, boolean> = new Map();
     public segments: Array<Segment> = [];

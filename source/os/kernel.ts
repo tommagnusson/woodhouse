@@ -1,5 +1,6 @@
 ///<reference path="../globals.ts" />
 ///<reference path="queue.ts" />
+///<reference path="../host/control.ts"/>
 
 /* ------------
      Kernel.ts
@@ -52,6 +53,9 @@ namespace TSOS {
       // Launch the shell.
       this.krnTrace("Creating and Launching the shell.");
       _OsShell = new Shell();
+
+      // hook up the memory
+      this.krnDisplayMemory();
 
       // Finally, initiate student testing protocol.
       if (_GLaDOS) {
@@ -110,6 +114,11 @@ namespace TSOS {
       // Put more here.
     }
 
+    public krnDisplayMemory() {
+      // the kernel can do what it wants with raw memory
+      Control.displayMemory(_Memory.dangerouslyExposeRaw());
+    }
+
     public krnInterruptHandler(irq, params) {
       // This is the Interrupt Handler Routine.  See pages 8 and 560.
       // Trace our entrance here so we can compute Interrupt Latency by analyzing the log file later on. Page 766.
@@ -135,12 +144,12 @@ namespace TSOS {
         );
       }
     }
-    // expects tokenized array of 2 digit hex strings
+
     private onLoadProgram(program: string) {
       try {
         const pid = _MemoryGuardian.load(program);
-
         _OsShell.putSystemText(`Process created with PID ${pid}`);
+        this.krnDisplayMemory();
       } catch (err) {
         _OsShell.putSystemText(err.message);
       }
