@@ -56,12 +56,39 @@ namespace TSOS {
         this.currentPID,
         new ProcessControlBlock(this.currentPID, firstAvailableSegment)
       );
-      // console.log(this.memory.dangerouslyExposeRaw());
       return this.currentPID++;
     }
 
     public read(location: string): string {
+      this.checkSegmentBounds(_Scheduler.executing.occupiedSegment, location);
       return this.memory.read(location);
+    }
+
+    public write(location: string, value: string) {
+      this.checkSegmentBounds(_Scheduler.executing.occupiedSegment, location);
+      const processSegment = _Scheduler.executing;
+    }
+
+    private checkSegmentBounds(s: Segment, attemptedLocation) {
+      this.checkBounds(s.base, s.limit, attemptedLocation);
+    }
+
+    private checkBounds(
+      base: string,
+      limit: string,
+      attemptedLocation: string
+    ) {
+      // base <= attemptedLocation <= limit
+      const baseNum = parseInt(base, 16);
+      const limitNum = parseInt(limit, 16);
+      const attemptedLocationNum = parseInt(attemptedLocation, 16);
+      if (baseNum > attemptedLocationNum || limitNum < attemptedLocationNum) {
+        throw new Error(
+          `Process ${
+            _Scheduler.executing.pid
+          } attempted to access memory out of its segment.`
+        );
+      }
     }
 
     // converts a valid program to an array of hex strings

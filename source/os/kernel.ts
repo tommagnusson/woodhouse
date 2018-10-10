@@ -166,9 +166,10 @@ namespace TSOS {
       }
     }
 
-    private onRunProgram(pid) {
+    private onRunProgram(pidString) {
+      const pid = parseInt(pidString);
       const isValidPid = Array.from(_MemoryGuardian.processes.keys()).some(
-        key => key === parseInt(pid)
+        key => key === pid
       );
       if (!isValidPid) {
         // uh oh...
@@ -177,7 +178,8 @@ namespace TSOS {
         );
         return;
       }
-      _OsShell.putSystemText(`Nice PID.`);
+      _OsShell.putSystemText(`Running ${pid}...`);
+      _Scheduler.readyQueue.enqueue(_MemoryGuardian.processes.get(pid));
       _CPU.isExecuting = true;
     }
 

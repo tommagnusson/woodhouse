@@ -58,6 +58,7 @@ namespace TSOS {
         this.PC++;
         opCode.args.push(_MemoryGuardian.read(this.PC.toString(16)));
       }
+
       // execute that shit
       this.execute(opCode);
       Control.displayCPU(
@@ -68,19 +69,42 @@ namespace TSOS {
         this.Yreg,
         this.Zflag
       );
+      console.table([
+        {
+          pc: this.PC,
+          opcode: opCode.code,
+          acc: this.Acc,
+          x: this.Xreg,
+          y: this.Yreg,
+          z: this.Zflag
+        }
+      ]);
 
       this.PC++;
     }
-    // TODO: STA and LDA operations
 
     private execute(opCode: OpCode): void {
-      switch (opCode.mnemonic) {
-        case "LDA":
-          this.Acc = opCode.args[0];
-          break;
-        case "BRK":
+      const FIRST = 0;
+      const SECOND = 1;
+
+      switch (opCode.code) {
+        case "00": // BRK
           _CPU.isExecuting = false;
+          break;
+        case "A9": // LDA - Acc w. constant
+          this.Acc = parseInt(opCode.args[FIRST], 16);
+          break;
+        case "AD": // LDA - Acc from mem
+          this.Acc = parseInt(_MemoryGuardian.read(opCode.args[FIRST]), 16);
+          break;
+        case "8D": // LDA - Store Acc in mem
+          _MemoryGuardian.write(opCode.args[FIRST], this.Acc.toString(16));
+          break;
+        case "6D": // ADC - address + Acc --> Acc
+          this.Acc += parseInt(_MemoryGuardian.read(opCode.args[FIRST]));
+        // TEST: A9 01 6D 01 00 00 -> Acc == 2
         default:
+          // TODO: blue screen
           _CPU.isExecuting = false;
       }
     }
