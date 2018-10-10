@@ -41,7 +41,11 @@ namespace TSOS {
       const base = parseInt(firstAvailableSegment.base, 16);
       const limit = parseInt(firstAvailableSegment.limit, 16);
       for (let i = base; i < limit + 1; i++) {
-        this.memory.write(i.toString(16), parsedProgram[i]);
+        let nextByte = parsedProgram[i];
+        if (nextByte === undefined) {
+          break; // end of program input
+        }
+        this.memory.write(i.toString(16), nextByte);
       }
 
       // mark the segment as occupied
