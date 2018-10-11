@@ -25,6 +25,18 @@ namespace TSOS {
       }
     }
 
+    public evacuate(process: ProcessControlBlock) {
+      const base = process.occupiedSegment.base;
+      const limit = process.occupiedSegment.limit;
+
+      for (let i = parseInt(base, 16); i <= parseInt(limit, 16); i++) {
+        _Memory.write(i.toString(16), "00");
+      }
+      Control.displayMemory(this.memory.dangerouslyExposeRaw());
+      this.segmentToIsOccupied.set(process.occupiedSegment, false);
+      this.processes.delete(process.pid);
+    }
+
     public load(program: string): number {
       const parsedProgram = MemoryGuardian.parseProgram(program);
 
@@ -47,7 +59,7 @@ namespace TSOS {
         }
         this.memory.write(i.toString(16), nextByte);
       }
-
+      Control.displayMemory(this.memory.dangerouslyExposeRaw());
       // mark the segment as occupied
       this.segmentToIsOccupied.set(firstAvailableSegment, true);
 

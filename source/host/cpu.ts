@@ -1,5 +1,5 @@
 ///<reference path="./opcode.ts"/>
-///<reference path="../os/memoryGuardian"/>
+///<reference path="../os/memoryGuardian.ts"/>
 ///<reference path="../globals.ts" />
 ///<reference path="../os/scheduler.ts"/>
 ///<reference path="./control.ts"/>
@@ -37,16 +37,33 @@ namespace TSOS {
       this.Yreg = 0;
       this.Zflag = 0;
       this.isExecuting = false;
+      this.renderStats();
     }
 
-    public cycle(): void {
+    public reset(): void {
+      this.PC = 0;
+      this.Acc = 0;
+      this.Xreg = 0;
+      this.Yreg = 0;
+      this.Zflag = 0;
+      this.renderStats();
+    }
+
+    public renderStats(opCode?: OpCode) {
+      Control.displayMemory(_Memory.dangerouslyExposeRaw());
+      const code = opCode ? opCode.code : "--";
+      Control.displayCPU(
+        this.PC,
+        code,
+        this.Acc,
+        this.Xreg,
+        this.Yreg,
+        this.Zflag
+      );
+    }
+
+    public cycle(process?: ProcessControlBlock): void {
       _Kernel.krnTrace("CPU cycle");
-      // look at scheduler to see which process we run
-      if (!_Scheduler.executing) {
-        // get the next one out of the ready queue
-        _Scheduler.executing = _Scheduler.readyQueue.dequeue();
-        // TODO: this.reset();
-      }
 
       const location = this.PC;
 
@@ -62,74 +79,63 @@ namespace TSOS {
 
       // execute that shit
       this.execute(opCode);
-      Control.displayMemory(_Memory.dangerouslyExposeRaw());
-      Control.displayCPU(
-        this.PC,
-        opCode.code,
-        this.Acc,
-        this.Xreg,
-        this.Yreg,
-        this.Zflag
-      );
-      console.log(this);
-      console.log(opCode);
-      // console.table([
-      //   {
-      //     pc: this.PC,
-      //     opcode: opCode,
-      //     acc: this.Acc,
-      //     x: this.Xreg,
-      //     y: this.Yreg,
-      //     z: this.Zflag
-      //   }
-      // ]);
+      this.renderStats(opCode);
+      console.table([
+        {
+          pc: this.PC,
+          opcode: opCode.code,
+          acc: this.Acc,
+          x: this.Xreg,
+          y: this.Yreg,
+          z: this.Zflag
+        }
+      ]);
 
       this.PC++;
     }
 
     private execute(opCode: OpCode): void {
-      const FIRST = 0;
-      const SECOND = 1;
+      const arg = opCode.args[0];
 
       switch (opCode.code) {
         // TEST: A9 01 00 -> Acc == 1
         case "A9": // LDA: constant --> Acc
-          this.Acc = parseInt(opCode.args[FIRST], 16);
+          this.Acc = parseInt(arg, 16);
           break;
 
         // TEST: AD 01 00 -> Acc == 1
         case "AD": // LDA: Acc from mem
-          this.Acc = parseInt(_MemoryGuardian.read(opCode.args[FIRST]), 16);
+          this.Acc = parseInt(_MemoryGuardian.read(arg), 16);
           break;
 
         // TEST: A9 02 8D 00 00 --> the A9 changes to 02
         case "8D": // STA: Store Acc in mem
-          _MemoryGuardian.write(opCode.args[FIRST], this.Acc.toString(16));
+          _MemoryGuardian.write(arg, this.Acc.toString(16));
           break;
 
         // TEST: A9 02 6d 01 00 --> Acc == 4
         case "6D": // ADC: read(address) + Acc --> Acc
-          this.Acc += _MemoryGuardian.readInt(opCode.args[FIRST]);
+          this.Acc += _MemoryGuardian.readInt(arg);
           break;
 
         // TEST: A2 02 00 --> X == 2
         case "A2": // LDX: constant --> x
-          this.Xreg = parseInt(opCode.args[FIRST], 16);
+          this.Xreg = parseInt(arg, 16);
           break;
 
         // TEST: AE 01 --> X == 1
         case "AE": // LDX: read(address) --> x
-          this.Xreg = _MemoryGuardian.readInt(opCode.args[FIRST]);
+          this.Xreg = _MemoryGuardian.readInt(arg);
           break;
 
         // TEST: A0 02 00 --> y == 2
         case "A0": // LDY: constant --> y
-          this.Yreg = parseInt(opCode.args[FIRST], 16);
+          this.Yreg = parseInt(arg, 16);
           break;
 
         // TEST: AC 01 00 --> y == 1
         case "AC": // LDY: read(address) --> y
-          this.Yreg = _MemoryGuardian.readInt(opCode.args[FIRST]);
+          this.Yreg = _MemoryGuardian.readInt(arg);
           break;
 
         // TEST: EA 00 --> nothing happens, just PC increments
@@ -137,21 +143,20 @@ namespace TSOS {
           break;
 
         case "00": // BRK
-          // TODO: sys call
-          _CPU.isExecuting = false;
+          console.log(_KernelInterruptQueue);
+          _KernelInterruptQueue.enqueue(new Interrupt(BREAK_PROGRAM_IRQ, []));
           break;
 
         // TEST: A2 01 EC 01 00 --> z == 1
         // TEST: A2 02 EC 00 00 --> z == 0
         case "EC": // CPX: (read(address) == X) ? Z = 1 : Z = 0
-          this.Zflag =
-            _MemoryGuardian.readInt(opCode.args[FIRST]) === this.Xreg ? 1 : 0;
+          this.Zflag = _MemoryGuardian.readInt(arg) === this.Xreg ? 1 : 0;
           break;
 
         // TEST: D0 02 00 00 A9 01 00 --> Acc == 1
-        // TEST: D0 FE --> infinite execution
+        // TODO TEST: D0 FE --> infinite execution
         case "D0": // BNE: z == 0 ? PC += read(address)
-          this.PC += this.Zflag === 0 ? parseInt(opCode.args[FIRST], 16) : 0;
+          this.PC += this.Zflag === 0 ? parseInt(arg, 16) : 0;
 
           // TODO: wrap
           if (this.PC > 255) {
@@ -162,10 +167,11 @@ namespace TSOS {
         // TEST: EE 01 00 --> 01 turns to 02
         case "EE": // INC: read(address)++
           _MemoryGuardian.write(
-            opCode.args[FIRST],
-            (_MemoryGuardian.readInt(opCode.args[FIRST]) + 1).toString(16)
+            arg,
+            (_MemoryGuardian.readInt(arg) + 1).toString(16)
           );
           break;
+        case "FF": // SYS: x == 01 ? print y int :? x == 02 print read(y) string
         default:
           // TODO: blue screen
           _CPU.isExecuting = false;

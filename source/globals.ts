@@ -21,6 +21,7 @@ const TIMER_IRQ: number = 0; // Pages 23 (timer), 9 (interrupts), and 561 (inter
 const KEYBOARD_IRQ: number = 1;
 const LOAD_PROGRAM_IRQ: number = 2;
 const RUN_PROGRAM_IRQ: number = 3;
+const BREAK_PROGRAM_IRQ: number = 4;
 
 //
 // Global Variables
@@ -46,9 +47,9 @@ var _Trace: boolean = true; // Default the OS trace to be on.
 
 // The OS Kernel and its queues.
 var _Kernel: TSOS.Kernel;
-var _KernelInterruptQueue; // Initializing this to null (which I would normally do) would then require us to specify the 'any' type, as below.
-var _KernelInputQueue: any = null; // Is this better? I don't like uninitialized variables. But I also don't like using the type specifier 'any'
-var _KernelBuffers: any[] = null; // when clearly 'any' is not what we want. There is likely a better way, but what is it?
+var _KernelInterruptQueue: TSOS.Queue;
+var _KernelInputQueue: TSOS.Queue;
+var _KernelBuffers: any[];
 
 // Standard input and output
 var _StdIn; // Same "to null or not to null" issue as above.

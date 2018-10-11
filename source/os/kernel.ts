@@ -94,9 +94,10 @@ namespace TSOS {
         // TODO: Implement a priority queue based on the IRQ number/id to enforce interrupt priority.
         var interrupt = _KernelInterruptQueue.dequeue();
         this.krnInterruptHandler(interrupt.irq, interrupt.params);
-      } else if (_CPU.isExecuting) {
+      } else if (_Scheduler.hasNext()) {
         // If there are no interrupts then run one CPU cycle if there is anything being processed
-        _CPU.cycle();
+        // look at scheduler to see which process we run
+        _CPU.cycle(_Scheduler.next());
       } else {
         // If there are no interrupts and there is nothing being executed then just be idle.
         this.krnTrace("Idle");
@@ -143,6 +144,9 @@ namespace TSOS {
         },
         [RUN_PROGRAM_IRQ]: () => {
           this.onRunProgram(params[0]);
+        },
+        [BREAK_PROGRAM_IRQ]: () => {
+          this.onBreakProgram();
         }
       };
 
@@ -152,6 +156,23 @@ namespace TSOS {
       } else {
         this.krnTrapError(
           "Invalid Interrupt Request. irq=" + irq + " params=[" + params + "]"
+        );
+      }
+    }
+
+    private onBreakProgram() {
+      // reclaim memory
+      _MemoryGuardian.evacuate(_Scheduler.executing);
+      const terminatedPid = _Scheduler.executing.pid;
+
+      // stop execution
+      if (_Scheduler.requestGracefulTermination()) {
+        _OsShell.putSystemText(
+          `Process ${terminatedPid} exited with status code 0.`
+        );
+      } else {
+        _OsShell.putSystemText(
+          `Process ${terminatedPid} exited with status code -1 (something went wrong).`
         );
       }
     }
@@ -179,8 +200,7 @@ namespace TSOS {
         return;
       }
       _OsShell.putSystemText(`Running ${pid}...`);
-      _Scheduler.readyQueue.enqueue(_MemoryGuardian.processes.get(pid));
-      _CPU.isExecuting = true;
+      _Scheduler.requestCPUExecution(_MemoryGuardian.processes.get(pid));
     }
 
     public krnTimerISR() {
