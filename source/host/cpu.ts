@@ -158,6 +158,14 @@ namespace TSOS {
             this.PC = this.PC - 256;
           }
           break;
+
+        // TEST: EE 01 00 --> 01 turns to 02
+        case "EE": // INC: read(address)++
+          _MemoryGuardian.write(
+            opCode.args[FIRST],
+            (_MemoryGuardian.readInt(opCode.args[FIRST]) + 1).toString(16)
+          );
+          break;
         default:
           // TODO: blue screen
           _CPU.isExecuting = false;

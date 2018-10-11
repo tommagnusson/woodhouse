@@ -60,9 +60,11 @@ namespace TSOS {
         case "EE":
           this.mnemonic = "INC";
           this.numArgs = 2;
+          break;
         case "FF":
           this.mnemonic = "SYS";
           this.numArgs = 0;
+          break;
         default:
           throw new Error(`Unknown opcode: ${this.code}`);
       }
