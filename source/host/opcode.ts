@@ -3,9 +3,10 @@ namespace TSOS {
     readonly code;
     readonly numArgs;
     readonly mnemonic;
+    readonly description;
     public args = [];
 
-    constructor(readonly hex: string) {
+    constructor(hex: string) {
       this.code = hex.toUpperCase();
       switch (this.code) {
         case "00":
@@ -48,6 +49,9 @@ namespace TSOS {
           this.mnemonic = "NOP";
           this.numArgs = 0;
           break;
+        case "EC":
+          this.mnemonic = "CPX";
+          this.numArgs = 2;
         default:
           throw new Error(`Unknown opcode: ${this.code}`);
       }

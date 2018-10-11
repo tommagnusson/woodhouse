@@ -45,6 +45,7 @@ namespace TSOS {
       if (!_Scheduler.executing) {
         // get the next one out of the ready queue
         _Scheduler.executing = _Scheduler.readyQueue.dequeue();
+        // TODO: this.reset();
       }
 
       const location = this.PC;
@@ -61,6 +62,7 @@ namespace TSOS {
 
       // execute that shit
       this.execute(opCode);
+      Control.displayMemory(_Memory.dangerouslyExposeRaw());
       Control.displayCPU(
         this.PC,
         opCode.code,
@@ -69,16 +71,18 @@ namespace TSOS {
         this.Yreg,
         this.Zflag
       );
-      console.table([
-        {
-          pc: this.PC,
-          opcode: opCode.code,
-          acc: this.Acc,
-          x: this.Xreg,
-          y: this.Yreg,
-          z: this.Zflag
-        }
-      ]);
+      console.log(this);
+      console.log(opCode);
+      // console.table([
+      //   {
+      //     pc: this.PC,
+      //     opcode: opCode,
+      //     acc: this.Acc,
+      //     x: this.Xreg,
+      //     y: this.Yreg,
+      //     z: this.Zflag
+      //   }
+      // ]);
 
       this.PC++;
     }
@@ -88,21 +92,54 @@ namespace TSOS {
       const SECOND = 1;
 
       switch (opCode.code) {
-        case "00": // BRK
-          _CPU.isExecuting = false;
-          break;
-        case "A9": // LDA - Acc w. constant
+        // TEST: A9 01 00 -> Acc == 1
+        case "A9": // LDA: constant --> Acc
           this.Acc = parseInt(opCode.args[FIRST], 16);
           break;
-        case "AD": // LDA - Acc from mem
+
+        // TEST: AD 01 00 -> Acc == 1
+        case "AD": // LDA: Acc from mem
           this.Acc = parseInt(_MemoryGuardian.read(opCode.args[FIRST]), 16);
           break;
-        case "8D": // LDA - Store Acc in mem
+
+        // TEST: A9 02 8D 00 00 --> the A9 changes to 02
+        case "8D": // STA: Store Acc in mem
           _MemoryGuardian.write(opCode.args[FIRST], this.Acc.toString(16));
           break;
-        case "6D": // ADC - address + Acc --> Acc
+
+        // TEST: A9 02 6d 01 00 --> Acc == 4
+        case "6D": // ADC: read(address) + Acc --> Acc
           this.Acc += parseInt(_MemoryGuardian.read(opCode.args[FIRST]));
-        // TEST: A9 01 6D 01 00 00 -> Acc == 2
+          break;
+
+        // TEST: A2 02 00 --> X == 2
+        case "A2": // LDX: constant --> x
+          this.Xreg = parseInt(opCode.args[FIRST], 16);
+          break;
+
+        // TEST: AE 01 --> X == 1
+        case "AE": // LDX: read(address) --> x
+          console.log(_MemoryGuardian.read(opCode.args[FIRST]));
+          this.Xreg = parseInt(_MemoryGuardian.read(opCode.args[FIRST]), 16);
+          break;
+
+        // TEST: A0 02 00 --> y == 2
+        case "A0": // LDY: constant --> y
+          this.Yreg = parseInt(opCode.args[FIRST], 16);
+          break;
+
+        // TEST: AC 01 00 --> y == 1
+        case "AC": // LDY: read(address) --> y
+          this.Yreg = parseInt(_MemoryGuardian.read(opCode.args[FIRST]), 16);
+          break;
+
+        // TEST: EA 00 --> nothing happens, just PC increments
+        case "EA": // SPORTS, IT'S IN THE GAME
+          break;
+        case "00": // BRK
+          // TODO: sys call
+          _CPU.isExecuting = false;
+          break;
         default:
           // TODO: blue screen
           _CPU.isExecuting = false;

@@ -21,6 +21,9 @@ namespace TSOS {
 
     public write(location: string, value: string) {
       this.checkBounds(location);
+      if (value.length == 1) {
+        value = `0${value}`;
+      }
       this.raw[parseInt(location, 16)] = value;
       return value;
     }

@@ -66,7 +66,7 @@ namespace TSOS {
 
     public write(location: string, value: string) {
       this.checkSegmentBounds(_Scheduler.executing.occupiedSegment, location);
-      const processSegment = _Scheduler.executing;
+      this.memory.write(location, value);
     }
 
     private checkSegmentBounds(s: Segment, attemptedLocation) {
