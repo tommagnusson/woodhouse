@@ -52,6 +52,17 @@ namespace TSOS {
         case "EC":
           this.mnemonic = "CPX";
           this.numArgs = 2;
+          break;
+        case "D0":
+          this.mnemonic = "BNE";
+          this.numArgs = 1;
+          break;
+        case "EE":
+          this.mnemonic = "INC";
+          this.numArgs = 2;
+        case "FF":
+          this.mnemonic = "SYS";
+          this.numArgs = 0;
         default:
           throw new Error(`Unknown opcode: ${this.code}`);
       }

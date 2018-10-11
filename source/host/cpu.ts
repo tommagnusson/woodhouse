@@ -109,7 +109,7 @@ namespace TSOS {
 
         // TEST: A9 02 6d 01 00 --> Acc == 4
         case "6D": // ADC: read(address) + Acc --> Acc
-          this.Acc += parseInt(_MemoryGuardian.read(opCode.args[FIRST]));
+          this.Acc += _MemoryGuardian.readInt(opCode.args[FIRST]);
           break;
 
         // TEST: A2 02 00 --> X == 2
@@ -119,8 +119,7 @@ namespace TSOS {
 
         // TEST: AE 01 --> X == 1
         case "AE": // LDX: read(address) --> x
-          console.log(_MemoryGuardian.read(opCode.args[FIRST]));
-          this.Xreg = parseInt(_MemoryGuardian.read(opCode.args[FIRST]), 16);
+          this.Xreg = _MemoryGuardian.readInt(opCode.args[FIRST]);
           break;
 
         // TEST: A0 02 00 --> y == 2
@@ -130,15 +129,34 @@ namespace TSOS {
 
         // TEST: AC 01 00 --> y == 1
         case "AC": // LDY: read(address) --> y
-          this.Yreg = parseInt(_MemoryGuardian.read(opCode.args[FIRST]), 16);
+          this.Yreg = _MemoryGuardian.readInt(opCode.args[FIRST]);
           break;
 
         // TEST: EA 00 --> nothing happens, just PC increments
         case "EA": // SPORTS, IT'S IN THE GAME
           break;
+
         case "00": // BRK
           // TODO: sys call
           _CPU.isExecuting = false;
+          break;
+
+        // TEST: A2 01 EC 01 00 --> z == 1
+        // TEST: A2 02 EC 00 00 --> z == 0
+        case "EC": // CPX: (read(address) == X) ? Z = 1 : Z = 0
+          this.Zflag =
+            _MemoryGuardian.readInt(opCode.args[FIRST]) === this.Xreg ? 1 : 0;
+          break;
+
+        // TEST: D0 02 00 00 A9 01 00 --> Acc == 1
+        // TEST: D0 FE --> infinite execution
+        case "D0": // BNE: z == 0 ? PC += read(address)
+          this.PC += this.Zflag === 0 ? parseInt(opCode.args[FIRST], 16) : 0;
+
+          // TODO: wrap
+          if (this.PC > 255) {
+            this.PC = this.PC - 256;
+          }
           break;
         default:
           // TODO: blue screen

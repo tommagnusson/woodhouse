@@ -151,15 +151,17 @@ namespace TSOS {
 
     public static displayCPU(counter, instruction, accumulator, x, y, z) {
       const cpuDisplayIdToValue = {
-        cpuCounter: counter,
+        cpuCounter: counter.toString(16),
         cpuInstruction: instruction,
-        cpuAccumulator: accumulator,
-        cpuX: x,
-        cpuY: y,
-        cpuZ: z
+        cpuAccumulator: accumulator.toString(16),
+        cpuX: x.toString(16),
+        cpuY: y.toString(16),
+        cpuZ: z.toString(16)
       };
       for (let key of Object.keys(cpuDisplayIdToValue)) {
-        document.getElementById(key).textContent = cpuDisplayIdToValue[key];
+        document.getElementById(key).textContent = cpuDisplayIdToValue[
+          key
+        ].toUpperCase();
       }
     }
 

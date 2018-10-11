@@ -59,6 +59,10 @@ namespace TSOS {
       return this.currentPID++;
     }
 
+    public readInt(location: string): number {
+      return parseInt(this.read(location), 16);
+    }
+
     public read(location: string): string {
       this.checkSegmentBounds(_Scheduler.executing.occupiedSegment, location);
       return this.memory.read(location);
