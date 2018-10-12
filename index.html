@@ -51,6 +51,9 @@
 
         <button type="button" id="btnStartOS" name="brnStartOS" class="btn btn-primary" tabindex="0" onclick="TSOS.Control.hostBtnStartOS_click(this);">Start</button>
 
+        <p class="text-muted" style="margin:0"><span id="date"></span></p>
+        <p class="text-muted" style="margin:0"><strong>Status:</strong> <span id="status"></span></p>
+
         <button type="button" id="btnHaltOS" name="brnHaltOS" class="btn btn-danger" disabled="disabled" tabindex="1"
             onclick="TSOS.Control.hostBtnHaltOS_click(this);">
             Halt</button>
@@ -65,13 +68,6 @@
             <div id="divConsole" class="bg-light" style="width:500px; height:500px;">
                 <canvas id="display" width="500px" height="500px" tabindex="3">
                 </canvas>
-            </div>
-
-            <div class="card mt-3" style="width:500px">
-                <div class="card-body">
-                    <p class="text-muted"><span id="date"></span></p>
-                    <p><strong>Status:</strong> <span id="status"></span></p>
-                </div>
             </div>
         </div>
 

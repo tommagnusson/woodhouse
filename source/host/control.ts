@@ -32,6 +32,15 @@ namespace TSOS {
     public static hostInit(): void {
       // This is called from index.html's onLoad event via the onDocumentLoad function pointer.
 
+      let started = false;
+      document.addEventListener("keydown", e => {
+        if (e.key === " " && !started) {
+          e.preventDefault();
+          document.getElementById("btnStartOS").click();
+          started = true;
+        }
+      });
+
       // Get a global reference to the canvas.  TODO: Should we move this stuff into a Display Device Driver?
       _Canvas = <HTMLCanvasElement>document.getElementById("display");
       _Canvas.style.backgroundColor = "white"; // reset perhaps from a BSOD
