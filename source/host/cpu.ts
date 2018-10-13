@@ -153,15 +153,21 @@ namespace TSOS {
           this.Zflag = _MemoryGuardian.readInt(arg) === this.Xreg ? 1 : 0;
           break;
 
-        // TEST: D0 02 00 00 A9 01 00 --> Acc == 1
-        // TODO TEST: D0 FE --> infinite execution
-        case "D0": // BNE: z == 0 ? PC += read(address)
-          this.PC += this.Zflag === 0 ? parseInt(arg, 16) : 0;
+        // TEST: D0 02 00 A9 01 00 --> Acc == 1
+        // TODO TEST: D0 FF --> infinite execution
+        case "D0": // BNE: z == 0 ? PC = wrap(arg)
+          console.log("PC b4", this.PC);
+          const wrap = (rawOffset: string): number => {
+            const lastUsableAddress = 255;
+            let rawNextAddress = this.PC + parseInt(rawOffset, 16);
 
-          // TODO: wrap
-          if (this.PC > 255) {
-            this.PC = this.PC - 256;
-          }
+            if (rawNextAddress > lastUsableAddress) {
+              rawNextAddress -= 256;
+            }
+            return rawNextAddress - 1;
+          };
+          this.PC = this.Zflag === 0 ? wrap(arg) : this.PC;
+          console.log("PC after", this.PC);
           break;
 
         // TEST: EE 01 00 --> 01 turns to 02

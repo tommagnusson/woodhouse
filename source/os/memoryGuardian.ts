@@ -102,7 +102,7 @@ namespace TSOS {
         throw new Error(
           `Process ${
             _Scheduler.executing.pid
-          } attempted to access memory out of its segment.`
+          } attempted to access memory address ${attemptedLocation}, which is out of its segment.`
         );
       }
     }
