@@ -167,11 +167,11 @@ namespace TSOS {
 
       // stop execution
       if (_Scheduler.requestGracefulTermination()) {
-        _OsShell.putSystemText(
+        _StdOut.putSystemText(
           `Process ${terminatedPid} exited with status code 0.`
         );
       } else {
-        _OsShell.putSystemText(
+        _StdOut.putSystemText(
           `Process ${terminatedPid} exited with status code -1 (something went wrong).`
         );
       }
@@ -180,10 +180,10 @@ namespace TSOS {
     private onLoadProgram(program: string) {
       try {
         const pid = _MemoryGuardian.load(program);
-        _OsShell.putSystemText(`Process created with PID ${pid}`);
+        _StdOut.putSystemText(`Process created with PID ${pid}`);
         this.krnDisplayMemory();
       } catch (err) {
-        _OsShell.putSystemText(err.message);
+        _StdOut.putSystemText(err.message);
       }
     }
 
@@ -194,12 +194,12 @@ namespace TSOS {
       );
       if (!isValidPid) {
         // uh oh...
-        _OsShell.putSystemText(
+        _StdOut.putSystemText(
           `PID ${pid} is invalid. Try running a PID of a process loaded into memory.`
         );
         return;
       }
-      _OsShell.putSystemText(`Running ${pid}...`);
+      _StdOut.putSystemText(`Running ${pid}...`);
       _Scheduler.requestCPUExecution(_MemoryGuardian.processes.get(pid));
     }
 

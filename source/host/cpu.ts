@@ -145,6 +145,7 @@ namespace TSOS {
         case "00": // BRK
           console.log(_KernelInterruptQueue);
           _KernelInterruptQueue.enqueue(new Interrupt(BREAK_PROGRAM_IRQ, []));
+          this.PC = 0;
           break;
 
         // TEST: A2 01 EC 01 00 --> z == 1
@@ -156,7 +157,6 @@ namespace TSOS {
         // TEST: D0 02 00 A9 01 00 --> Acc == 1
         // TODO TEST: D0 FF --> infinite execution
         case "D0": // BNE: z == 0 ? PC = wrap(arg)
-          console.log("PC b4", this.PC);
           const wrap = (rawOffset: string): number => {
             const lastUsableAddress = 255;
             let rawNextAddress = this.PC + parseInt(rawOffset, 16);
@@ -167,7 +167,6 @@ namespace TSOS {
             return rawNextAddress - 1;
           };
           this.PC = this.Zflag === 0 ? wrap(arg) : this.PC;
-          console.log("PC after", this.PC);
           break;
 
         // TEST: EE 01 00 --> 01 turns to 02
@@ -177,7 +176,24 @@ namespace TSOS {
             (_MemoryGuardian.readInt(arg) + 1).toString(16)
           );
           break;
+        // TEST: A2 01 A0 02 FF --> print 2
+        // A0 LDY w C
+        // A2 LDX w C
         case "FF": // SYS: x == 01 ? print y int :? x == 02 print read(y) string
+          if (this.Xreg === 1) {
+            _StdOut.putSystemText(this.Yreg.toString());
+          } else if (this.Xreg === 2) {
+            // start reading and printing out the string at the location
+            let location = arg;
+            for (
+              let asciiNum = _MemoryGuardian.readInt(location);
+              asciiNum !== 0;
+              location = (parseInt(location, 16) + 1).toString(16)
+            ) {
+              let character = String.fromCharCode(asciiNum);
+              _StdOut.putSystemText(character);
+            }
+          }
         default:
           // TODO: blue screen
           _CPU.isExecuting = false;

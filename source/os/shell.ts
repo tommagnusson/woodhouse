@@ -244,6 +244,12 @@ namespace TSOS {
     public handleInput(buffer) {
       _Kernel.krnTrace("Shell Command~" + buffer);
 
+      if (buffer === "") {
+        _StdOut.advanceLine();
+        this.putPrompt();
+        return;
+      }
+
       //
       // Parse the input...
       //
@@ -472,13 +478,6 @@ namespace TSOS {
         _StdOut.putText("Whoops, looks like you entered an invalid program.");
       }
     };
-
-    public putSystemText(text: string): void {
-      _StdOut.backspace(_OsShell.promptStr);
-      _StdOut.putText(text);
-      _StdOut.advanceLine();
-      _OsShell.putPrompt();
-    }
 
     public shellCrash = (args?) => {
       _Console.clearScreen();

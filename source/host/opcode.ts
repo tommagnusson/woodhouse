@@ -4,7 +4,7 @@ namespace TSOS {
     readonly numArgs;
     readonly mnemonic;
     readonly description;
-    public args = [];
+    public args: Array<string> = [];
 
     constructor(hex: string) {
       this.code = hex.toUpperCase();

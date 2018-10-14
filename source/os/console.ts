@@ -180,6 +180,24 @@ namespace TSOS {
       }
     }
 
+    public putSystemText(text: string): void {
+      // erase existing line
+      for (let i = this.buffer.length - 1; i >= 0; i--) {
+        _StdOut.backspace(this.buffer[i]);
+      }
+      _StdOut.backspace(_OsShell.promptStr);
+
+      // put sys text
+      _StdOut.putText(text);
+      _StdOut.advanceLine();
+
+      // restore existing line
+      _OsShell.putPrompt();
+      if (this.buffer.length > 0) {
+        _StdOut.putText(this.buffer);
+      }
+    }
+
     public advanceLine(): void {
       this.currentXPosition = 0;
 
