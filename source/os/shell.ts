@@ -17,6 +17,7 @@ namespace TSOS {
   export class Shell {
     // Properties
     public promptStr = ">";
+    public promptPresent = false;
     public commandList: Array<ShellCommand> = [];
     public curses =
       "[fuvg],[cvff],[shpx],[phag],[pbpxfhpxre],[zbgureshpxre],[gvgf],[qvpx]";
@@ -172,6 +173,7 @@ namespace TSOS {
 
     public putPrompt() {
       _StdOut.putText(this.promptStr);
+      this.promptPresent = true;
     }
 
     public completeCommand(buffer): string {

@@ -69,29 +69,36 @@ namespace TSOS {
 
       // look at the memory guardian to get the next instruction
       const rawInstruction = _MemoryGuardian.read(location.toString(16));
-      const opCode = new OpCode(rawInstruction);
+      try {
+        const opCode = new OpCode(rawInstruction);
 
-      // lookahead based on args to instructions
-      for (let i = 0; i < opCode.numArgs; i++) {
-        this.PC++;
-        opCode.args.push(_MemoryGuardian.read(this.PC.toString(16)));
-      }
-
-      // execute that shit
-      this.execute(opCode);
-      this.renderStats(opCode);
-      console.table([
-        {
-          pc: this.PC,
-          opcode: opCode.code,
-          acc: this.Acc,
-          x: this.Xreg,
-          y: this.Yreg,
-          z: this.Zflag
+        // lookahead based on args to instructions
+        for (let i = 0; i < opCode.numArgs; i++) {
+          this.PC++;
+          opCode.args.push(_MemoryGuardian.read(this.PC.toString(16)));
         }
-      ]);
 
-      this.PC++;
+        // execute that shit
+        this.execute(opCode);
+        this.renderStats(opCode);
+        console.table([
+          {
+            pc: this.PC,
+            opcode: opCode.code,
+            acc: this.Acc,
+            x: this.Xreg,
+            y: this.Yreg,
+            z: this.Zflag
+          }
+        ]);
+
+        this.PC++;
+      } catch (ex) {
+        // TODO: bluescreen
+        console.log(ex);
+        _KernelInterruptQueue.enqueue(new Interrupt(BREAK_PROGRAM_IRQ, []));
+        this.PC = 0;
+      }
     }
 
     private execute(opCode: OpCode): void {
@@ -143,7 +150,6 @@ namespace TSOS {
           break;
 
         case "00": // BRK
-          console.log(_KernelInterruptQueue);
           _KernelInterruptQueue.enqueue(new Interrupt(BREAK_PROGRAM_IRQ, []));
           this.PC = 0;
           break;
@@ -179,19 +185,21 @@ namespace TSOS {
         // TEST: A2 01 A0 02 FF --> print 2
         // A0 LDY w C
         // A2 LDX w C
+        // TEST: A2 02 A0 05 FF 68 69 00 --> print "hi"
         case "FF": // SYS: x == 01 ? print y int :? x == 02 print read(y) string
           if (this.Xreg === 1) {
-            _StdOut.putSystemText(this.Yreg.toString());
+            _StdOut.putSysTextLn(this.Yreg.toString());
           } else if (this.Xreg === 2) {
             // start reading and printing out the string at the location
-            let location = arg;
+            let asciiNum;
             for (
-              let asciiNum = _MemoryGuardian.readInt(location);
+              let location = this.Yreg.toString(16);
               asciiNum !== 0;
               location = (parseInt(location, 16) + 1).toString(16)
             ) {
+              asciiNum = _MemoryGuardian.readInt(location);
               let character = String.fromCharCode(asciiNum);
-              _StdOut.putSystemText(character);
+              _StdOut.putSysText(character);
             }
           }
         default:
