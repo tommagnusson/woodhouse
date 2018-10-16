@@ -79,7 +79,7 @@ namespace TSOS {
         }
 
         // execute that shit
-        this.execute(opCode);
+        const shouldExitEarly = this.execute(opCode);
         this.renderStats(opCode);
         console.table([
           {
@@ -91,18 +91,20 @@ namespace TSOS {
             z: this.Zflag
           }
         ]);
-
+        if (shouldExitEarly) {
+          return;
+        }
         this.PC++;
       } catch (ex) {
         console.error(ex);
-        _StdOut.putSysTextLn(ex);
-        _KernelInterruptQueue.enqueue(new Interrupt(BREAK_PROGRAM_IRQ, []));
+        _StdOut.putText(ex.message);
+        _KernelInterruptQueue.enqueue(new Interrupt(ERR_PROGRAM_IRQ, []));
         this.reset();
       }
     }
 
-    // TODO: nice error messages onto screen.
-    private execute(opCode: OpCode): void {
+    // returns if it should exit early (without incrementing the PC)
+    private execute(opCode: OpCode): boolean {
       const arg = opCode.args[0];
 
       switch (opCode.code) {
@@ -153,7 +155,7 @@ namespace TSOS {
         case "00": // BRK
           _KernelInterruptQueue.enqueue(new Interrupt(BREAK_PROGRAM_IRQ, []));
           this.reset();
-          break;
+          return true;
 
         // TEST: A2 01 EC 01 00 --> z == 1
         // TEST: A2 02 EC 00 00 --> z == 0
@@ -162,7 +164,7 @@ namespace TSOS {
           break;
 
         // TODO: D0 00 actually starts on the byte after 00
-        // TEST: D0 02 00 A9 01 00 --> Acc == 1
+        // TEST: D0 01 00 A9 01 00 --> Acc == 1
         // TODO TEST: D0 FF --> infinite execution
         case "D0": // BNE: z == 0 ? PC = wrap(arg)
           const wrap = (rawOffset: string): number => {
@@ -172,7 +174,7 @@ namespace TSOS {
             if (rawNextAddress > lastUsableAddress) {
               rawNextAddress -= 256;
             }
-            return rawNextAddress - 1;
+            return rawNextAddress;
           };
           this.PC = this.Zflag === 0 ? wrap(arg) : this.PC;
           break;
@@ -190,20 +192,21 @@ namespace TSOS {
         // TEST: A2 02 A0 05 FF 68 69 00 --> print "hi"
         case "FF": // SYS: x == 01 ? print y int :? x == 02 print read(y) string
           if (this.Xreg === 1) {
-            _StdOut.putSysTextLn(this.Yreg.toString());
+            _StdOut.putText(this.Yreg.toString());
             console.log("sysout", this.Yreg.toString());
           } else if (this.Xreg === 2) {
             // start reading and printing out the string at the location
             let asciiNum;
             for (
-              let location = this.Yreg.toString(16);
+              let location = this.Yreg.toString(16),
+                asciiNum = _MemoryGuardian.readInt(location);
               asciiNum !== 0;
-              location = (parseInt(location, 16) + 1).toString(16)
+              location = (parseInt(location, 16) + 1).toString(16),
+                asciiNum = _MemoryGuardian.readInt(location)
             ) {
-              asciiNum = _MemoryGuardian.readInt(location);
               let character = String.fromCharCode(asciiNum);
-              console.log("sysout", character);
-              _StdOut.putSysText(character);
+              console.log("sysout", character, asciiNum);
+              _StdOut.putText(character);
             }
           } else {
             _StdOut.putSysText(
@@ -215,7 +218,9 @@ namespace TSOS {
           _StdOut.putSysTextLn(`Found invalid opcode ${opCode.code}.`);
           _KernelInterruptQueue.enqueue(new Interrupt(BREAK_PROGRAM_IRQ, []));
           this.reset();
+          return true;
       }
+      return false;
     }
   }
 }

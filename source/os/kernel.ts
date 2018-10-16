@@ -148,6 +148,9 @@ namespace TSOS {
         },
         [BREAK_PROGRAM_IRQ]: () => {
           this.onBreakProgram();
+        },
+        [ERR_PROGRAM_IRQ]: () => {
+          this.onErrProgram(params[0]);
         }
       };
 
@@ -161,21 +164,31 @@ namespace TSOS {
       }
     }
 
-    private onBreakProgram() {
+    private stopRunningProgram(makeMessage) {
       // reclaim memory
       _MemoryGuardian.evacuate(_Scheduler.executing);
       const terminatedPid = _Scheduler.executing.pid;
-
+      const message = makeMessage(terminatedPid);
       // stop execution
       if (_Scheduler.requestGracefulTermination()) {
-        _StdOut.putSysTextLn(
-          `Process ${terminatedPid} exited with status code 0.`
-        );
+        _StdOut.putText(message);
       } else {
-        _StdOut.putSysTextLn(
-          `Process ${terminatedPid} exited with status code -1 (something went wrong).`
+        _StdOut.putText(
+          `Process ${terminatedPid} could not be gracefully terminated.`
         );
       }
+    }
+
+    private onErrProgram(errMessage) {
+      this.stopRunningProgram(
+        pid => `Process ${pid} exited with status code -1.`
+      );
+    }
+
+    private onBreakProgram() {
+      this.stopRunningProgram(
+        pid => `Process ${pid} exited with status code 0.`
+      );
     }
 
     private onLoadProgram(program: string) {

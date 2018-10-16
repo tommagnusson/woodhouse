@@ -3,6 +3,7 @@
 namespace TSOS {
   export class ProcessControlBlock {
     // TODO: status
+    // resident, ready, executing, terminated
     public status = "uninitialized";
 
     // which instruction we're on
