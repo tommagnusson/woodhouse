@@ -75,16 +75,16 @@ namespace TSOS {
           this.PC -= 256;
         }
         Control.renderStats(this, opCode);
-        console.table([
-          {
-            pc: this.PC,
-            opcode: opCode.code,
-            acc: this.Acc,
-            x: this.Xreg,
-            y: this.Yreg,
-            z: this.Zflag
-          }
-        ]);
+        // console.table([
+        //   {
+        //     pc: this.PC,
+        //     opcode: opCode.code,
+        //     acc: this.Acc,
+        //     x: this.Xreg,
+        //     y: this.Yreg,
+        //     z: this.Zflag
+        //   }
+        // ]);
       } catch (ex) {
         console.error(ex);
         _StdOut.putText(ex.message);
