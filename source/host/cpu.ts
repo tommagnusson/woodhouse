@@ -80,6 +80,13 @@ namespace TSOS {
 
         // execute that shit
         const shouldExitEarly = this.execute(opCode);
+        if (shouldExitEarly) {
+          return;
+        }
+        this.PC++;
+        while (this.PC > 255) {
+          this.PC -= 256;
+        }
         this.renderStats(opCode);
         console.table([
           {
@@ -91,10 +98,6 @@ namespace TSOS {
             z: this.Zflag
           }
         ]);
-        if (shouldExitEarly) {
-          return;
-        }
-        this.PC++;
       } catch (ex) {
         console.error(ex);
         _StdOut.putText(ex.message);
@@ -163,20 +166,10 @@ namespace TSOS {
           this.Zflag = _MemoryGuardian.readInt(arg) === this.Xreg ? 1 : 0;
           break;
 
-        // TODO: D0 00 actually starts on the byte after 00
         // TEST: D0 01 00 A9 01 00 --> Acc == 1
-        // TODO TEST: D0 FF --> infinite execution
+        // TEST: D0 00 --> infinite execution
         case "D0": // BNE: z == 0 ? PC = wrap(arg)
-          const wrap = (rawOffset: string): number => {
-            const lastUsableAddress = 255;
-            let rawNextAddress = this.PC + parseInt(rawOffset, 16);
-
-            if (rawNextAddress > lastUsableAddress) {
-              rawNextAddress -= 256;
-            }
-            return rawNextAddress;
-          };
-          this.PC = this.Zflag === 0 ? wrap(arg) : this.PC;
+          this.PC += this.Zflag === 0 ? parseInt(arg, 16) : 0;
           break;
 
         // TEST: EE 01 00 --> 01 turns to 02
