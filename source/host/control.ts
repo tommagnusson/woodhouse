@@ -1,5 +1,9 @@
 ///<reference path="../globals.ts" />
 ///<reference path="../os/canvastext.ts" />
+///<reference path="./cpu.ts"/>
+///<reference path="./memory.ts"/>
+///<reference path="../os/memoryGuardian.ts"/>
+///<reference path="../os/processControlBlock.ts"/>
 
 /* ------------
      Control.ts
@@ -28,6 +32,15 @@ namespace TSOS {
     public static hostInit(): void {
       // This is called from index.html's onLoad event via the onDocumentLoad function pointer.
 
+      let started = false;
+      document.addEventListener("keydown", e => {
+        if (e.key === " " && !started) {
+          e.preventDefault();
+          document.getElementById("btnStartOS").click();
+          started = true;
+        }
+      });
+
       // Get a global reference to the canvas.  TODO: Should we move this stuff into a Display Device Driver?
       _Canvas = <HTMLCanvasElement>document.getElementById("display");
       _Canvas.style.backgroundColor = "white"; // reset perhaps from a BSOD
@@ -44,11 +57,9 @@ namespace TSOS {
       CanvasTextFunctions.enable(_DrawingContext); // Text functionality is now built in to the HTML5 canvas. But this is old-school, and fun, so we'll keep it.
 
       // Clear the log text box.
-      // Use the TypeScript cast to HTMLInputElement
       (<HTMLInputElement>document.getElementById("taHostLog")).value = "";
 
       // Set focus on the start button.
-      // Use the TypeScript cast to HTMLInputElement
       (<HTMLInputElement>document.getElementById("btnStartOS")).focus();
 
       // updates the time and status
@@ -115,6 +126,7 @@ namespace TSOS {
       document.getElementById("display").focus();
 
       // ... Create and initialize the CPU (because it's part of the hardware)  ...
+      _Memory = new Memory();
       _CPU = new Cpu(); // Note: We could simulate multi-core systems by instantiating more than one instance of the CPU here.
       _CPU.init(); //       There's more to do, like dealing with scheduling and such, but this would be a start. Pretty cool.
 
@@ -137,12 +149,128 @@ namespace TSOS {
       // TODO: Is there anything else we need to do here?
     }
 
+    public static onToggleStep(btn): void {
+      // toggle
+      btn.dataset.state = btn.dataset.state === "on" ? "off" : "on";
+
+      if (btn.dataset.state === "on") {
+        btn.classList.replace("btn-outline-info", "btn-info");
+        document.getElementById("btnStepOS").removeAttribute("disabled");
+        // turn on single step
+        _SingleStepIsEnabled = true;
+      } else {
+        btn.classList.replace("btn-info", "btn-outline-info");
+        document
+          .getElementById("btnStepOS")
+          .setAttribute("disabled", "disabled");
+        // turn off
+        _SingleStepIsEnabled = false;
+      }
+    }
+
+    public static onStep(btn): void {
+      _ShouldStep = true;
+    }
+
     public static hostBtnReset_click(btn): void {
       // The easiest and most thorough way to do this is to reload (not refresh) the document.
       location.reload(true);
       // That boolean parameter is the 'forceget' flag. When it is true it causes the page to always
       // be reloaded from the server. If it is false or not specified the browser may reload the
       // page from its cache, which is not what we want.
+    }
+
+    public static renderStats(cpu: Cpu, opCode?: OpCode) {
+      Control.displayMemory(_Memory.dangerouslyExposeRaw());
+      const code = opCode ? opCode.code : "--";
+      Control.displayCPU(cpu.PC, code, cpu.Acc, cpu.Xreg, cpu.Yreg, cpu.Zflag);
+      _Scheduler
+        ? Control.displayPCB(_Scheduler.executing || null, cpu, code)
+        : null;
+    }
+
+    public static displayCPU(counter, instruction, accumulator, x, y, z) {
+      const cpuDisplayIdToValue = {
+        cpuCounter: counter.toString(16),
+        cpuInstruction: instruction,
+        cpuAccumulator: accumulator.toString(16),
+        cpuX: x.toString(16),
+        cpuY: y.toString(16),
+        cpuZ: z.toString(16)
+      };
+      for (let key of Object.keys(cpuDisplayIdToValue)) {
+        document.getElementById(key).textContent = cpuDisplayIdToValue[
+          key
+        ].toUpperCase();
+      }
+    }
+
+    public static displayPCB(pcb: ProcessControlBlock, cpu: Cpu, code: string) {
+      if (!pcb) {
+        [
+          "pcbPID",
+          "pcbState",
+          "pcbBase",
+          "pcbLimit",
+          "pcbCounter",
+          "pcbInstruction",
+          "pcbAccumulator",
+          "pcbX",
+          "pcbY",
+          "pcbZ"
+        ].forEach(id => {
+          document.getElementById(id).textContent = "";
+        });
+        return;
+      }
+      const pcbDisplayIdToValue = {
+        pcbPID: pcb.pid.toString(),
+        pcbState: pcb.status,
+        pcbBase: pcb.occupiedSegment.base.toString(),
+        pcbLimit: pcb.occupiedSegment.limit.toString(),
+        pcbCounter: cpu.PC.toString(),
+        pcbInstruction: code,
+        pcbAccumulator: cpu.Acc.toString(),
+        pcbX: cpu.Xreg.toString(),
+        pcbY: cpu.Yreg.toString(),
+        pcbZ: cpu.Zflag.toString()
+      };
+      for (let key of Object.keys(pcbDisplayIdToValue)) {
+        document.getElementById(key).textContent = pcbDisplayIdToValue[
+          key
+        ].toUpperCase();
+      }
+    }
+
+    public static displayMemory(memory: string[]) {
+      const memoryTable = document.querySelector(".memory table tbody");
+
+      // clear existing garbage in there
+      while (memoryTable.firstChild) {
+        memoryTable.removeChild(memoryTable.firstChild);
+      }
+
+      // break into bytes
+      for (let location = 0; location < memory.length; location += 8) {
+        const byte = memory.slice(location, location + 8);
+
+        const byteRow = document.createElement("tr");
+
+        const addressLabel = document.createElement("th");
+        addressLabel.setAttribute("scope", "row");
+        addressLabel.textContent = `0x${location.toString(16)}`;
+
+        byteRow.appendChild(addressLabel);
+
+        for (let i = 0; i < byte.length; i++) {
+          const bit = byte[i];
+          const bitCell = document.createElement("td");
+          bitCell.setAttribute("id", `location${location + i}`);
+          bitCell.textContent = bit;
+          byteRow.appendChild(bitCell);
+        }
+        memoryTable.appendChild(byteRow);
+      }
     }
   }
 }

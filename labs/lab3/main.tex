@@ -1,0 +1,38 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+
+\title{OS - Lab 3}
+\author{Thomas Magnusson}
+\date{23 September 2018}
+
+\begin{document}
+
+\maketitle
+
+\section{Explain the difference between internal and external fragmentation}
+
+Internal fragmentation refers to the space left in memory from allocating more space than is necessary for a program. Using fixed-size memory partitions, it is rare that a program uses the entire partition. The leftover space is internal fragmentation.
+
+External fragmentation refers to the space left in memory from using variable-size memory partitions, which are fitted to the size of the process. Processes that die leave "holes" in memory, which may or may not be big enough to fit other processes. The leftover "holes" are external fragmentation.
+
+Internal refers to the leftover space within a partition, while external refers to the leftover space outside of a partition.
+
+\section{Given	Five	(5)	memory	partitions	of	100KB,	500KB,	200KB,	300KB,	and	600KB	(in	that	
+order),	how	would	optimal,	First-Fit,	best-Fit,	and	worst-Fit	algorithms	place	processes	
+of	212KB (A),	417KB (B),	112KB (C),	and	426KB (D)	(in	that	order)?}
+
+Assuming none of the processes are allowed to switch places:
+
+\begin{center}
+  \begin{tabular}{ l | c | c | c | c | c | r }
+    \hline
+    \textbf{Algorithm} & \textbf{100KB} & \textbf{500KB} & \textbf{200KB} & \textbf{300KB} & \textbf{600KB} & \textbf{Out of Memory?}\\ \hline
+    Optimal & N/A & D & C & A & B & false \\ \hline
+    First-Fit & N/A & A + C & N/A & N/A & B & true, D \\ \hline
+    Best-Fit & N/A & B & C & A & D & false \\ \hline
+    Worst-Fit & N/A & B & N/A & N/A & A + C & true, D \\ \hline
+  \end{tabular}
+\end{center}
+
+
+\end{document}

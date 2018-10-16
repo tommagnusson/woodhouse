@@ -1,0 +1,94 @@
+body {
+  font-family: Helvetica, Verdana, Arial, sans-serif;
+  font-size: 12pt;
+  font-weight: normal;
+  font-style: normal;
+  color: white;
+}
+
+.navbar {
+  justify-content: left;
+}
+
+nav > *:not(:first-child) {
+  margin-left: 40px;
+}
+
+#display {
+  cursor: default;
+}
+
+#buttons {
+  display: flex;
+}
+
+#buttons button:not(:first-child) {
+  margin-left: 20px;
+}
+
+.normal_button {
+  width: 100px;
+}
+
+.footerText {
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8pt;
+  text-align: center;
+}
+
+#divMain {
+  display: grid;
+  grid-template-columns: 1fr 500px 500px 500px 1fr;
+  align-content: center;
+  margin-top: 20px;
+  grid-gap: 10px;
+}
+
+#taProgramInput {
+  font-family: "Courier New", Courier, monospace;
+}
+
+.left {
+  grid-column: 2;
+  justify-self: center;
+  align-self: start;
+}
+
+.center {
+  grid-column: 3;
+  justify-self: center;
+  align-self: start;
+}
+
+@media (max-width: 1500px) {
+  #divMain {
+    grid-template-columns: 1fr 500px 500px 1fr;
+  }
+
+  .left {
+    grid-column: 2;
+  }
+  .right {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .center {
+    grid-column: 2;
+  }
+}
+
+.memory {
+  height: 240px;
+  overflow-y: scroll;
+  padding: 2px;
+  border: 1px solid white;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.cpu-group {
+  margin-top: 27px;
+}

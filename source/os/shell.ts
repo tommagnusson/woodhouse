@@ -17,6 +17,7 @@ namespace TSOS {
   export class Shell {
     // Properties
     public promptStr = ">";
+    public promptPresent = false;
     public commandList: Array<ShellCommand> = [];
     public curses =
       "[fuvg],[cvff],[shpx],[phag],[pbpxfhpxre],[zbgureshpxre],[gvgf],[qvpx]";
@@ -154,6 +155,14 @@ namespace TSOS {
         )
       );
 
+      this.commandList.push(
+        new ShellCommand(
+          this.shellRun,
+          "run",
+          "<pid> - runs the given pid in memory"
+        )
+      );
+
       // ps  - list the running processes and their IDs
       // kill <id> - kills the specified process id.
 
@@ -164,6 +173,14 @@ namespace TSOS {
 
     public putPrompt() {
       _StdOut.putText(this.promptStr);
+      this.promptPresent = true;
+    }
+
+    public deletePrompt() {
+      if (this.promptPresent) {
+        _StdOut.backspace(_OsShell.promptStr);
+        this.promptPresent = false;
+      }
     }
 
     public completeCommand(buffer): string {
@@ -236,6 +253,12 @@ namespace TSOS {
     public handleInput(buffer) {
       _Kernel.krnTrace("Shell Command~" + buffer);
 
+      if (buffer === "") {
+        _StdOut.advanceLine();
+        this.putPrompt();
+        return;
+      }
+
       //
       // Parse the input...
       //
@@ -250,6 +273,7 @@ namespace TSOS {
       if (maybeCommand.length === 1) {
         const command = maybeCommand[0];
         this.execute(command.func, args);
+        command.arguments = args;
         this.commandHistory.push(command);
         this.currentCommandIndex = null; // reset the index
       } else {
@@ -455,6 +479,9 @@ namespace TSOS {
       const program = _ProgramInput.value;
       if (this.isValidProgram(program)) {
         _StdOut.putText("Nice program you have there.");
+        _KernelInterruptQueue.enqueue(
+          new Interrupt(LOAD_PROGRAM_IRQ, [program])
+        );
       } else {
         // error message
         _StdOut.putText("Whoops, looks like you entered an invalid program.");
@@ -471,6 +498,14 @@ namespace TSOS {
       _StdOut.advanceLine();
       _StdOut.putText("I have to shut this off, terribly sorry.", "white");
       _Kernel.krnShutdown();
+    };
+
+    public shellRun = args => {
+      if (args.length !== 1) {
+        _StdOut.putText("Please provide a single PID as an argument.");
+        return;
+      }
+      _KernelInterruptQueue.enqueue(new Interrupt(RUN_PROGRAM_IRQ, args));
     };
   }
 }

@@ -65,7 +65,7 @@ namespace TSOS {
       }
       _StdOut.advanceLine();
       _OsShell.putPrompt();
-      _StdOut.putText(command.command);
+      _StdOut.putText(command.command + " " + command.arguments.join(" "));
       return true;
     }
 
@@ -74,7 +74,7 @@ namespace TSOS {
       if (!this.putNewCommand(command)) {
         return;
       }
-      this.buffer = command.command;
+      this.buffer = command.command + " " + command.arguments.join(" ");
     };
 
     private onDownArrow = () => {
@@ -130,16 +130,35 @@ namespace TSOS {
       this.buffer = "";
     };
 
-    public putText(text, color: string = "black"): void {
-      // My first inclination here was to write two functions: putChar() and putString().
-      // Then I remembered that JavaScript is (sadly) untyped and it won't differentiate
-      // between the two.  So rather than be like PHP and write two (or more) functions that
-      // do the same thing, thereby encouraging confusion and decreasing readability, I
-      // decided to write one function and use the term "text" to connote string or char.
-      //
-      // UPDATE: Even though we are now working in TypeScript, char and string remain undistinguished.
-      //         Consider fixing that.
+    public putText(text: string, color: string = "black"): void {
+      const whiteSpacePattern = /(\s)/g;
+      const words = text.split(whiteSpacePattern); // split on whitespace (but include delimiters in words array)
+      words.forEach(word => {
+        const wordWidth = _DrawingContext.measureText(
+          this.currentFont,
+          this.currentFontSize,
+          word
+        );
+        if (wordWidth > _Canvas.width) {
+          // too big to break, we gotta print it all and it will fall offscreen
+          this.rawPutText(word);
+          return;
+        }
+        const xSpaceLeft = _Canvas.width - this.currentXPosition;
+        if (wordWidth > xSpaceLeft) {
+          // put it on a new line
+          this.advanceLine();
+        }
+        this.rawPutText(word);
+      });
+    }
 
+    /**
+     * Puts the text on the console without regard for line spacing
+     * @param text the text to put onto the console
+     * @param color default black, what color the text should be
+     */
+    private rawPutText(text: string, color: string = "black") {
       if (text !== "") {
         // Draw the text at the current X and Y coordinates.
         _DrawingContext.drawText(
@@ -151,12 +170,33 @@ namespace TSOS {
           color
         );
         // Move the current X position.
-        var offset = _DrawingContext.measureText(
+        const offset = _DrawingContext.measureText(
           this.currentFont,
           this.currentFontSize,
           text
         );
+
         this.currentXPosition = this.currentXPosition + offset;
+      }
+    }
+
+    public putSysText(text: string): void {
+      // erase existing line
+      for (let i = this.buffer.length - 1; i >= 0; i--) {
+        _StdOut.backspace(this.buffer[i]);
+      }
+      _OsShell.deletePrompt();
+      // put sys text
+      _StdOut.putText(text);
+    }
+
+    public putSysTextLn(text: string): void {
+      this.putSysText(text);
+      _StdOut.advanceLine();
+      // restore existing line
+      _OsShell.putPrompt();
+      if (this.buffer.length > 0) {
+        _StdOut.putText(this.buffer);
       }
     }
 

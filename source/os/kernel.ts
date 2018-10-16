@@ -1,5 +1,7 @@
 ///<reference path="../globals.ts" />
 ///<reference path="queue.ts" />
+///<reference path="../host/control.ts"/>
+///<reference path="./scheduler.ts"/>
 
 /* ------------
      Kernel.ts
@@ -22,6 +24,7 @@ namespace TSOS {
       // Page 8. {
       Control.hostLog("bootstrap", "host"); // Use hostLog because we ALWAYS want this, even if _Trace is off.
 
+      _MemoryGuardian = new MemoryGuardian(_Memory);
       // Initialize our global queues.
       _KernelInterruptQueue = new Queue(); // A (currently) non-priority queue for interrupt requests (IRQs).
       _KernelBuffers = new Array(); // Buffers... for the kernel.
@@ -52,6 +55,12 @@ namespace TSOS {
       // Launch the shell.
       this.krnTrace("Creating and Launching the shell.");
       _OsShell = new Shell();
+
+      _Scheduler = new Scheduler();
+
+      // hook up the memory
+      this.krnDisplayMemory();
+      this.krnDisplayCPU();
 
       // Finally, initiate student testing protocol.
       if (_GLaDOS) {
@@ -86,11 +95,16 @@ namespace TSOS {
         // TODO: Implement a priority queue based on the IRQ number/id to enforce interrupt priority.
         var interrupt = _KernelInterruptQueue.dequeue();
         this.krnInterruptHandler(interrupt.irq, interrupt.params);
-      } else if (_CPU.isExecuting) {
-        // If there are no interrupts then run one CPU cycle if there is anything being processed. {
-        _CPU.cycle();
+      } else if (
+        _Scheduler.hasNext() &&
+        (!_SingleStepIsEnabled || (_SingleStepIsEnabled && _ShouldStep))
+      ) {
+        // If there are no interrupts then run one CPU cycle if there is anything being processed
+        // look at scheduler to see which process we run
+        _CPU.cycle(_Scheduler.next());
+        _ShouldStep = false;
       } else {
-        // If there are no interrupts and there is nothing being executed then just be idle. {
+        // If there are no interrupts and there is nothing being executed then just be idle.
         this.krnTrace("Idle");
       }
     }
@@ -110,31 +124,105 @@ namespace TSOS {
       // Put more here.
     }
 
+    public krnDisplayMemory() {
+      // the kernel can do what it wants with raw memory
+      Control.displayMemory(_Memory.dangerouslyExposeRaw());
+    }
+
+    public krnDisplayCPU() {
+      Control.displayCPU("-", "--", "-", "-", "-", "-");
+    }
+
     public krnInterruptHandler(irq, params) {
       // This is the Interrupt Handler Routine.  See pages 8 and 560.
       // Trace our entrance here so we can compute Interrupt Latency by analyzing the log file later on. Page 766.
       this.krnTrace("Handling IRQ~" + irq);
 
-      // Invoke the requested Interrupt Service Routine via Switch/Case rather than an Interrupt Vector.
-      // TODO: Consider using an Interrupt Vector in the future.
-      // Note: There is no need to "dismiss" or acknowledge the interrupts in our design here.
-      //       Maybe the hardware simulation will grow to support/require that in the future.
-      switch (irq) {
-        case TIMER_IRQ:
-          this.krnTimerISR(); // Kernel built-in routine for timers (not the clock).
-          break;
-        case KEYBOARD_IRQ:
+      const interruptVector = {
+        [TIMER_IRQ]: this.krnTimerISR,
+        [KEYBOARD_IRQ]: () => {
           _krnKeyboardDriver.isr(params); // Kernel mode device driver
           _StdIn.handleInput();
-          break;
-        default:
-          this.krnTrapError(
-            "Invalid Interrupt Request. irq=" + irq + " params=[" + params + "]"
-          );
+        },
+        [LOAD_PROGRAM_IRQ]: () => {
+          this.onLoadProgram(params[0]);
+        },
+        [RUN_PROGRAM_IRQ]: () => {
+          this.onRunProgram(params[0]);
+        },
+        [BREAK_PROGRAM_IRQ]: () => {
+          this.onBreakProgram();
+        },
+        [ERR_PROGRAM_IRQ]: () => {
+          this.onErrProgram(params[0]);
+        }
+      };
+
+      const maybeFn = interruptVector[irq];
+      if (maybeFn) {
+        maybeFn();
+      } else {
+        this.krnTrapError(
+          "Invalid Interrupt Request. irq=" + irq + " params=[" + params + "]"
+        );
       }
     }
 
+    private stopRunningProgram(makeMessage) {
+      // reclaim memory
+      _MemoryGuardian.evacuate(_Scheduler.executing);
+      const terminatedPid = _Scheduler.executing.pid;
+      const message = makeMessage(terminatedPid);
+      // stop execution
+      if (_Scheduler.requestGracefulTermination()) {
+        _StdOut.putText(message);
+      } else {
+        _StdOut.putText(
+          `Process ${terminatedPid} could not be gracefully terminated.`
+        );
+      }
+      Control.renderStats(_CPU);
+    }
+
+    private onErrProgram(errMessage) {
+      this.stopRunningProgram(
+        pid => `Process ${pid} exited with status code -1.`
+      );
+    }
+
+    private onBreakProgram() {
+      this.stopRunningProgram(
+        pid => `Process ${pid} exited with status code 0.`
+      );
+    }
+
+    private onLoadProgram(program: string) {
+      try {
+        const process = _Scheduler.requestResidency(program);
+        _StdOut.putSysTextLn(`Process created with PID ${process.pid}`);
+
+        this.krnDisplayMemory();
+      } catch (err) {
+        _StdOut.putSysTextLn(err.message);
+      }
+    }
+
+    private onRunProgram(pidString) {
+      const pid = parseInt(pidString);
+      const isValidPid = _Scheduler.requestCPUExecution(pid);
+      if (!isValidPid) {
+        // uh oh...
+        _StdOut.putSysTextLn(
+          `PID ${pid} is invalid. Try running a PID of a process loaded into memory.`
+        );
+        return;
+      }
+      _StdOut.putSysTextLn(`Running ${pid}...`);
+      _Scheduler.requestCPUExecution(pid);
+    }
+
     public krnTimerISR() {
+      console.log("timer");
       // The built-in TIMER (not clock) Interrupt Service Routine (as opposed to an ISR coming from a device driver). {
       // Check multiprogramming parameters and enforce quanta here. Call the scheduler / context switch here if necessary.
     }

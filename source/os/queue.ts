@@ -11,7 +11,6 @@
 namespace TSOS {
   export class Queue {
     constructor(public q = new Array()) {}
-
     public getSize() {
       return this.q.length;
     }
