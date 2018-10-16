@@ -95,10 +95,14 @@ namespace TSOS {
         // TODO: Implement a priority queue based on the IRQ number/id to enforce interrupt priority.
         var interrupt = _KernelInterruptQueue.dequeue();
         this.krnInterruptHandler(interrupt.irq, interrupt.params);
-      } else if (_Scheduler.hasNext()) {
+      } else if (
+        _Scheduler.hasNext() &&
+        (!_SingleStepIsEnabled || (_SingleStepIsEnabled && _ShouldStep))
+      ) {
         // If there are no interrupts then run one CPU cycle if there is anything being processed
         // look at scheduler to see which process we run
         _CPU.cycle(_Scheduler.next());
+        _ShouldStep = false;
       } else {
         // If there are no interrupts and there is nothing being executed then just be idle.
         this.krnTrace("Idle");

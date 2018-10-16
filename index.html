@@ -48,18 +48,26 @@
 
 <body onload="onDocumentLoad()" class="bg-dark">
     <nav class="navbar sticky-top navbar-light bg-light">
+        <div id="buttons">
+            <button type="button" id="btnStartOS" name="brnStartOS" class="btn btn-primary" tabindex="0" onclick="TSOS.Control.hostBtnStartOS_click(this);">Start</button>
+            <button type="button" id="btnHaltOS" name="brnHaltOS" class="btn btn-danger" disabled="disabled" tabindex="1"
+                onclick="TSOS.Control.hostBtnHaltOS_click(this);">
+                Halt</button>
+            <button type="button" id="btnReset" name="brnReset" class="btn btn-secondary" disabled="disabled" tabindex="3"
+                onclick="TSOS.Control.hostBtnReset_click(this);">Reset</button>
+        </div>
 
-        <button type="button" id="btnStartOS" name="brnStartOS" class="btn btn-primary" tabindex="0" onclick="TSOS.Control.hostBtnStartOS_click(this);">Start</button>
+        <div id="singleStep" style="display:flex">
+            <button data-state="off" type="button" id="btnStepToggle" class="btn btn-outline-info" onclick="TSOS.Control.onToggleStep(this)">Toggle
+                Step</button>
+            <button type="button" id="btnStepOS" class="btn btn-outline-dark" disabled style="margin-left:20px" onclick="TSOS.Control.onStep(this)">Step</button>
+        </div>
+
 
         <p class="text-muted" style="margin:0"><span id="date"></span></p>
         <p class="text-muted" style="margin:0"><strong>Status:</strong> <span id="status"></span></p>
 
-        <button type="button" id="btnHaltOS" name="brnHaltOS" class="btn btn-danger" disabled="disabled" tabindex="1"
-            onclick="TSOS.Control.hostBtnHaltOS_click(this);">
-            Halt</button>
 
-        <button type="button" id="btnReset" name="brnReset" class="btn btn-secondary" disabled="disabled" tabindex="2"
-            onclick="TSOS.Control.hostBtnReset_click(this);">Reset</button>
     </nav>
     <div id="divMain" style="width:100%;">
         <div class="left">

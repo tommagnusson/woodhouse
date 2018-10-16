@@ -149,6 +149,29 @@ namespace TSOS {
       // TODO: Is there anything else we need to do here?
     }
 
+    public static onToggleStep(btn): void {
+      // toggle
+      btn.dataset.state = btn.dataset.state === "on" ? "off" : "on";
+
+      if (btn.dataset.state === "on") {
+        btn.classList.replace("btn-outline-info", "btn-info");
+        document.getElementById("btnStepOS").removeAttribute("disabled");
+        // turn on single step
+        _SingleStepIsEnabled = true;
+      } else {
+        btn.classList.replace("btn-info", "btn-outline-info");
+        document
+          .getElementById("btnStepOS")
+          .setAttribute("disabled", "disabled");
+        // turn off
+        _SingleStepIsEnabled = false;
+      }
+    }
+
+    public static onStep(btn): void {
+      _ShouldStep = true;
+    }
+
     public static hostBtnReset_click(btn): void {
       // The easiest and most thorough way to do this is to reload (not refresh) the document.
       location.reload(true);

@@ -10,6 +10,14 @@ body {
   cursor: default;
 }
 
+#buttons {
+  display: flex;
+}
+
+#buttons button:not(:nth-child(1)) {
+  margin-left: 20px;
+}
+
 .normal_button {
   width: 100px;
 }
