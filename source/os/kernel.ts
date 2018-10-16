@@ -24,6 +24,7 @@ namespace TSOS {
       // Page 8. {
       Control.hostLog("bootstrap", "host"); // Use hostLog because we ALWAYS want this, even if _Trace is off.
 
+      _MemoryGuardian = new MemoryGuardian(_Memory);
       // Initialize our global queues.
       _KernelInterruptQueue = new Queue(); // A (currently) non-priority queue for interrupt requests (IRQs).
       _KernelBuffers = new Array(); // Buffers... for the kernel.
@@ -167,12 +168,10 @@ namespace TSOS {
 
       // stop execution
       if (_Scheduler.requestGracefulTermination()) {
-        _StdOut.advanceLine();
         _StdOut.putSysTextLn(
           `Process ${terminatedPid} exited with status code 0.`
         );
       } else {
-        _StdOut.advanceLine();
         _StdOut.putSysTextLn(
           `Process ${terminatedPid} exited with status code -1 (something went wrong).`
         );
@@ -183,6 +182,7 @@ namespace TSOS {
       try {
         const pid = _MemoryGuardian.load(program);
         _StdOut.putSysTextLn(`Process created with PID ${pid}`);
+        _Scheduler.residentQueue.enqueue(pid);
         this.krnDisplayMemory();
       } catch (err) {
         _StdOut.putSysTextLn(err.message);

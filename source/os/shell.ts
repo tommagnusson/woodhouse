@@ -176,6 +176,13 @@ namespace TSOS {
       this.promptPresent = true;
     }
 
+    public deletePrompt() {
+      if (this.promptPresent) {
+        _StdOut.backspace(_OsShell.promptStr);
+        this.promptPresent = false;
+      }
+    }
+
     public completeCommand(buffer): string {
       _Kernel.krnTrace("Code complete~" + buffer);
 

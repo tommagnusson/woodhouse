@@ -4,6 +4,9 @@
 namespace TSOS {
   export class Scheduler {
     readonly readyQueue: Queue = new Queue();
+
+    // TODO: resident queue
+    readonly residentQueue: Queue = new Queue();
     public executing: ProcessControlBlock = null;
 
     constructor() {}

@@ -185,10 +185,7 @@ namespace TSOS {
       for (let i = this.buffer.length - 1; i >= 0; i--) {
         _StdOut.backspace(this.buffer[i]);
       }
-      if (_OsShell.promptPresent) {
-        _StdOut.backspace(_OsShell.promptStr);
-        _OsShell.promptPresent = false;
-      }
+      _OsShell.deletePrompt();
       // put sys text
       _StdOut.putText(text);
     }

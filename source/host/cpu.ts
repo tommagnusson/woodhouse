@@ -94,13 +94,14 @@ namespace TSOS {
 
         this.PC++;
       } catch (ex) {
-        // TODO: bluescreen
-        console.log(ex);
+        console.error(ex);
+        _StdOut.putSysTextLn(ex);
         _KernelInterruptQueue.enqueue(new Interrupt(BREAK_PROGRAM_IRQ, []));
-        this.PC = 0;
+        this.reset();
       }
     }
 
+    // TODO: nice error messages onto screen.
     private execute(opCode: OpCode): void {
       const arg = opCode.args[0];
 
@@ -151,7 +152,7 @@ namespace TSOS {
 
         case "00": // BRK
           _KernelInterruptQueue.enqueue(new Interrupt(BREAK_PROGRAM_IRQ, []));
-          this.PC = 0;
+          this.reset();
           break;
 
         // TEST: A2 01 EC 01 00 --> z == 1
@@ -160,6 +161,7 @@ namespace TSOS {
           this.Zflag = _MemoryGuardian.readInt(arg) === this.Xreg ? 1 : 0;
           break;
 
+        // TODO: D0 00 actually starts on the byte after 00
         // TEST: D0 02 00 A9 01 00 --> Acc == 1
         // TODO TEST: D0 FF --> infinite execution
         case "D0": // BNE: z == 0 ? PC = wrap(arg)
@@ -189,6 +191,7 @@ namespace TSOS {
         case "FF": // SYS: x == 01 ? print y int :? x == 02 print read(y) string
           if (this.Xreg === 1) {
             _StdOut.putSysTextLn(this.Yreg.toString());
+            console.log("sysout", this.Yreg.toString());
           } else if (this.Xreg === 2) {
             // start reading and printing out the string at the location
             let asciiNum;
@@ -199,12 +202,19 @@ namespace TSOS {
             ) {
               asciiNum = _MemoryGuardian.readInt(location);
               let character = String.fromCharCode(asciiNum);
+              console.log("sysout", character);
               _StdOut.putSysText(character);
             }
+          } else {
+            _StdOut.putSysText(
+              `Found invalid Xreg value ${this.Xreg} for SYS.`
+            );
           }
+          break;
         default:
-          // TODO: blue screen
-          _CPU.isExecuting = false;
+          _StdOut.putSysTextLn(`Found invalid opcode ${opCode.code}.`);
+          _KernelInterruptQueue.enqueue(new Interrupt(BREAK_PROGRAM_IRQ, []));
+          this.reset();
       }
     }
   }

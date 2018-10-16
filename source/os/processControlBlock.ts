@@ -2,6 +2,9 @@
 
 namespace TSOS {
   export class ProcessControlBlock {
+    // TODO: status
+    public status = "uninitialized";
+
     // which instruction we're on
     public programCounter = 0;
     public xReg = "";
