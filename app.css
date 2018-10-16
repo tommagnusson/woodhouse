@@ -6,6 +6,14 @@ body {
   color: white;
 }
 
+.navbar {
+  justify-content: left;
+}
+
+nav > *:not(:first-child) {
+  margin-left: 40px;
+}
+
 #display {
   cursor: default;
 }
@@ -14,7 +22,7 @@ body {
   display: flex;
 }
 
-#buttons button:not(:nth-child(1)) {
+#buttons button:not(:first-child) {
   margin-left: 20px;
 }
 
