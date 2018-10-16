@@ -37,7 +37,7 @@ namespace TSOS {
       this.Yreg = 0;
       this.Zflag = 0;
       this.isExecuting = false;
-      this.renderStats();
+      Control.renderStats(this);
     }
 
     public reset(): void {
@@ -46,20 +46,7 @@ namespace TSOS {
       this.Xreg = 0;
       this.Yreg = 0;
       this.Zflag = 0;
-      this.renderStats();
-    }
-
-    public renderStats(opCode?: OpCode) {
-      Control.displayMemory(_Memory.dangerouslyExposeRaw());
-      const code = opCode ? opCode.code : "--";
-      Control.displayCPU(
-        this.PC,
-        code,
-        this.Acc,
-        this.Xreg,
-        this.Yreg,
-        this.Zflag
-      );
+      Control.renderStats(this);
     }
 
     public cycle(process?: ProcessControlBlock): void {
@@ -87,7 +74,7 @@ namespace TSOS {
         while (this.PC > 255) {
           this.PC -= 256;
         }
-        this.renderStats(opCode);
+        Control.renderStats(this, opCode);
         console.table([
           {
             pc: this.PC,
@@ -186,7 +173,6 @@ namespace TSOS {
         case "FF": // SYS: x == 01 ? print y int :? x == 02 print read(y) string
           if (this.Xreg === 1) {
             _StdOut.putText(this.Yreg.toString());
-            console.log("sysout", this.Yreg.toString());
           } else if (this.Xreg === 2) {
             // start reading and printing out the string at the location
             let asciiNum;
@@ -198,7 +184,6 @@ namespace TSOS {
                 asciiNum = _MemoryGuardian.readInt(location)
             ) {
               let character = String.fromCharCode(asciiNum);
-              console.log("sysout", character, asciiNum);
               _StdOut.putText(character);
             }
           } else {

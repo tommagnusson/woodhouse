@@ -37,7 +37,7 @@ namespace TSOS {
       this.processes.delete(process.pid);
     }
 
-    public load(program: string): number {
+    public load(program: string): ProcessControlBlock {
       const parsedProgram = MemoryGuardian.parseProgram(program);
 
       // find the first available segment from memory
@@ -64,11 +64,13 @@ namespace TSOS {
       this.segmentToIsOccupied.set(firstAvailableSegment, true);
 
       // map the PID to the PCB
-      this.processes.set(
+      const newProcess = new ProcessControlBlock(
         this.currentPID,
-        new ProcessControlBlock(this.currentPID, firstAvailableSegment)
+        firstAvailableSegment
       );
-      return this.currentPID++;
+      this.processes.set(this.currentPID, newProcess);
+      this.currentPID++;
+      return newProcess;
     }
 
     public readInt(location: string): number {

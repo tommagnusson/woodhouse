@@ -181,6 +181,7 @@ namespace TSOS {
           `Process ${terminatedPid} could not be gracefully terminated.`
         );
       }
+      Control.renderStats(_CPU);
     }
 
     private onErrProgram(errMessage) {
@@ -197,9 +198,9 @@ namespace TSOS {
 
     private onLoadProgram(program: string) {
       try {
-        const pid = _MemoryGuardian.load(program);
-        _StdOut.putSysTextLn(`Process created with PID ${pid}`);
-        _Scheduler.residentQueue.enqueue(pid);
+        const process = _Scheduler.requestResidency(program);
+        _StdOut.putSysTextLn(`Process created with PID ${process.pid}`);
+
         this.krnDisplayMemory();
       } catch (err) {
         _StdOut.putSysTextLn(err.message);
@@ -208,9 +209,7 @@ namespace TSOS {
 
     private onRunProgram(pidString) {
       const pid = parseInt(pidString);
-      const isValidPid = Array.from(_MemoryGuardian.processes.keys()).some(
-        key => key === pid
-      );
+      const isValidPid = _Scheduler.requestCPUExecution(pid);
       if (!isValidPid) {
         // uh oh...
         _StdOut.putSysTextLn(
@@ -219,7 +218,7 @@ namespace TSOS {
         return;
       }
       _StdOut.putSysTextLn(`Running ${pid}...`);
-      _Scheduler.requestCPUExecution(_MemoryGuardian.processes.get(pid));
+      _Scheduler.requestCPUExecution(pid);
     }
 
     public krnTimerISR() {

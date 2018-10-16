@@ -180,6 +180,15 @@ namespace TSOS {
       // page from its cache, which is not what we want.
     }
 
+    public static renderStats(cpu: Cpu, opCode?: OpCode) {
+      Control.displayMemory(_Memory.dangerouslyExposeRaw());
+      const code = opCode ? opCode.code : "--";
+      Control.displayCPU(cpu.PC, code, cpu.Acc, cpu.Xreg, cpu.Yreg, cpu.Zflag);
+      _Scheduler
+        ? Control.displayPCB(_Scheduler.executing || null, cpu, code)
+        : null;
+    }
+
     public static displayCPU(counter, instruction, accumulator, x, y, z) {
       const cpuDisplayIdToValue = {
         cpuCounter: counter.toString(16),
@@ -191,6 +200,43 @@ namespace TSOS {
       };
       for (let key of Object.keys(cpuDisplayIdToValue)) {
         document.getElementById(key).textContent = cpuDisplayIdToValue[
+          key
+        ].toUpperCase();
+      }
+    }
+
+    public static displayPCB(pcb: ProcessControlBlock, cpu: Cpu, code: string) {
+      if (!pcb) {
+        [
+          "pcbPID",
+          "pcbState",
+          "pcbBase",
+          "pcbLimit",
+          "pcbCounter",
+          "pcbInstruction",
+          "pcbAccumulator",
+          "pcbX",
+          "pcbY",
+          "pcbZ"
+        ].forEach(id => {
+          document.getElementById(id).textContent = "";
+        });
+        return;
+      }
+      const pcbDisplayIdToValue = {
+        pcbPID: pcb.pid.toString(),
+        pcbState: pcb.status,
+        pcbBase: pcb.occupiedSegment.base.toString(),
+        pcbLimit: pcb.occupiedSegment.limit.toString(),
+        pcbCounter: cpu.PC.toString(),
+        pcbInstruction: code,
+        pcbAccumulator: cpu.Acc.toString(),
+        pcbX: cpu.Xreg.toString(),
+        pcbY: cpu.Yreg.toString(),
+        pcbZ: cpu.Zflag.toString()
+      };
+      for (let key of Object.keys(pcbDisplayIdToValue)) {
+        document.getElementById(key).textContent = pcbDisplayIdToValue[
           key
         ].toUpperCase();
       }
