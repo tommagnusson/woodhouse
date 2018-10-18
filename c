@@ -1,3 +1,3 @@
 #!/bin/sh
-/usr/local/lib/node_modules/typescript/bin/tsc --version
-/usr/local/lib/node_modules/typescript/bin/tsc --rootDir source/ --outDir distrib/  source/*.ts source/host/*.ts source/os/*.ts
+tsc --version
+tsc --target "es6"  --rootDir source/ --outDir distrib/  source/*.ts source/host/*.ts source/os/*.ts
