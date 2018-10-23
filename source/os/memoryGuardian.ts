@@ -5,7 +5,7 @@
 namespace TSOS {
   // it's a memory manager, but cooler
   export class MemoryGuardian {
-    static readonly NUM_SEGMENTS = 1;
+    static readonly NUM_SEGMENTS = 3;
 
     private currentPID = 0;
     public processes: Map<number, ProcessControlBlock> = new Map();
@@ -25,16 +25,22 @@ namespace TSOS {
       }
     }
 
-    public evacuate(process: ProcessControlBlock) {
-      const base = process.occupiedSegment.base;
-      const limit = process.occupiedSegment.limit;
+    public evacuate(process?: ProcessControlBlock) {
+      const processesToEvacuate: Array<ProcessControlBlock> = process
+        ? [process]
+        : Array.from(this.processes.values());
 
-      for (let i = parseInt(base, 16); i <= parseInt(limit, 16); i++) {
-        _Memory.write(i.toString(16), "00");
+      for (let p of processesToEvacuate) {
+        const base = p.occupiedSegment.base;
+        const limit = p.occupiedSegment.limit;
+
+        for (let i = parseInt(base, 16); i <= parseInt(limit, 16); i++) {
+          _Memory.write(i.toString(16), "00");
+        }
+        Control.displayMemory(this.memory.dangerouslyExposeRaw());
+        this.segmentToIsOccupied.set(p.occupiedSegment, false);
+        this.processes.delete(p.pid);
       }
-      Control.displayMemory(this.memory.dangerouslyExposeRaw());
-      this.segmentToIsOccupied.set(process.occupiedSegment, false);
-      this.processes.delete(process.pid);
     }
 
     public load(program: string): ProcessControlBlock {
@@ -52,8 +58,8 @@ namespace TSOS {
       // write it into memory
       const base = parseInt(firstAvailableSegment.base, 16);
       const limit = parseInt(firstAvailableSegment.limit, 16);
-      for (let i = base; i < limit + 1; i++) {
-        let nextByte = parsedProgram[i];
+      for (let p = 0, i = base; i < limit + 1; i++, p++) {
+        let nextByte = parsedProgram[p];
         if (nextByte === undefined) {
           break; // end of program input
         }

@@ -2,7 +2,7 @@ namespace TSOS {
   export class Memory {
     private raw: Array<string> = [];
 
-    public constructor(public readonly sizeInBytes = 256) {
+    public constructor(public readonly sizeInBytes = (256 * 3)) {
       for (let i = 0; i < sizeInBytes; i++) {
         this.raw[i] = "00";
       }

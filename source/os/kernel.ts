@@ -155,6 +155,9 @@ namespace TSOS {
         },
         [ERR_PROGRAM_IRQ]: () => {
           this.onErrProgram(params[0]);
+        },
+        [REQ_CLEAR_MEM_IRQ]: () => {
+          this.onClearMem();
         }
       };
 
@@ -166,6 +169,11 @@ namespace TSOS {
           "Invalid Interrupt Request. irq=" + irq + " params=[" + params + "]"
         );
       }
+    }
+
+    private onClearMem() {
+      _MemoryGuardian.evacuate();
+      _StdOut.putSysTextLn("Cleared memory.");
     }
 
     private stopRunningProgram(makeMessage) {

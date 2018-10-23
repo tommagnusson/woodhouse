@@ -23,6 +23,7 @@ const LOAD_PROGRAM_IRQ: number = 2;
 const RUN_PROGRAM_IRQ: number = 3;
 const BREAK_PROGRAM_IRQ: number = 4;
 const ERR_PROGRAM_IRQ: number = 5;
+const REQ_CLEAR_MEM_IRQ: number = 6;
 
 //
 // Global Variables

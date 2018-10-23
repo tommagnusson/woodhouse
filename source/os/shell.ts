@@ -163,6 +163,14 @@ namespace TSOS {
         )
       );
 
+      this.commandList.push(
+        new ShellCommand(
+          this.shellClearMem,
+          "clearmem",
+          "- clears all memory partitions"
+        )
+      )
+
       // ps  - list the running processes and their IDs
       // kill <id> - kills the specified process id.
 
@@ -507,5 +515,9 @@ namespace TSOS {
       }
       _KernelInterruptQueue.enqueue(new Interrupt(RUN_PROGRAM_IRQ, args));
     };
+
+    public shellClearMem = args => {
+      _KernelInterruptQueue.enqueue(new Interrupt(REQ_CLEAR_MEM_IRQ, []));
+    }
   }
 }
