@@ -40,17 +40,22 @@ namespace TSOS {
     }
 
     public requestCPUExecution(pid: number): boolean {
+      if (this.residentToReady(pid) === null) {
+        return false;
+      }
+      _CPU.isExecuting = true;
+      return true;
+    }
+
+    private residentToReady(pid: number): ProcessControlBlock {
+      // transfer from resident map to ready queue
       if (!this.residentMap.has(pid)) {
         return null;
       }
-      const readyProgram = this.residentMap.get(pid);
-      readyProgram.status = "ready";
-      this.readyQueue.enqueue(readyProgram);
-
-      const requestedWillExecute =
-        this.readyQueue.peek().pid === pid && !_CPU.isExecuting;
-      _CPU.isExecuting = true;
-      return requestedWillExecute;
+      const process = this.residentMap.get(pid);
+      this.residentMap.delete(pid);
+      this.readyQueue.enqueue(process);
+      return process;
     }
   }
 }
