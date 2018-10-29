@@ -1,5 +1,6 @@
 ///<reference path="./processControlBlock.ts"/>
 ///<reference path="./queue.ts"/>
+///<reference path="./roundRobinSchedule.ts"/>
 
 namespace TSOS {
   export class Scheduler {
@@ -8,6 +9,8 @@ namespace TSOS {
 
     readonly residentMap: Map<number, ProcessControlBlock> = new Map();
     public executing: ProcessControlBlock = null;
+
+    public scheduleType = new RoundRobinSchedule();
 
     constructor() {}
 
@@ -33,8 +36,21 @@ namespace TSOS {
 
     public next(): ProcessControlBlock {
       if (!this.executing) {
-        this.executing = this.readyQueue.dequeue();
-        this.executing.status = "running";
+        this.readyToExecuting();
+        if (this.executing === null) {
+          return null;
+        }
+      }
+
+      // both the scheduling algorithm dictates it,
+      // and we would be switching to a different process
+      const shouldContextSwitch =
+        this.scheduleType.shouldContextSwitch(this.executing.pid) &&
+        !this.readyQueue.isEmpty();
+
+      if (shouldContextSwitch) {
+        console.log("context switched");
+        this.contextSwitch(_CPU);
       }
       return this.executing;
     }
@@ -55,7 +71,29 @@ namespace TSOS {
       const process = this.residentMap.get(pid);
       this.residentMap.delete(pid);
       this.readyQueue.enqueue(process);
+      process.status = "ready";
       return process;
+    }
+
+    private contextSwitch(cpu: Cpu) {
+      console.log("ready", this.readyQueue);
+      console.log("resident", this.residentMap);
+      console.log("executing", this.executing);
+      // serialize executing
+      this.executing.serialize(cpu);
+      // put it back onto the ready q
+      this.readyQueue.enqueue(this.executing);
+      // readyToExecuting
+      this.readyToExecuting();
+    }
+
+    private readyToExecuting(): ProcessControlBlock {
+      if (this.readyQueue.isEmpty()) {
+        return null;
+      }
+      this.executing = this.readyQueue.dequeue();
+      this.executing.status = "running";
+      return this.executing;
     }
   }
 }

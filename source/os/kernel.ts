@@ -226,7 +226,6 @@ namespace TSOS {
         return;
       }
       _StdOut.putSysTextLn(`Running ${pid}...`);
-      _Scheduler.requestCPUExecution(pid);
     }
 
     public krnTimerISR() {

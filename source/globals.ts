@@ -24,7 +24,11 @@ const RUN_PROGRAM_IRQ: number = 3;
 const BREAK_PROGRAM_IRQ: number = 4;
 const ERR_PROGRAM_IRQ: number = 5;
 const REQ_CLEAR_MEM_IRQ: number = 6;
+const CONEXT_SWITCH_IRQ: number = 7;
 
+enum ScheduleType {
+  RoundRobin
+}
 //
 // Global Variables
 // TODO: Make a global object and use that instead of the "_" naming convention in the global namespace.

@@ -49,20 +49,24 @@ namespace TSOS {
       Control.renderStats(this);
     }
 
-    public cycle(process?: ProcessControlBlock): void {
+    public lastInstruction: OpCode;
+
+    public cycle(process: ProcessControlBlock): void {
       _Kernel.krnTrace("CPU cycle");
 
-      const location = this.PC;
+      // needs to be a function because lookahead modifies the PC
+      const location = () => this.PC.toString(16);
 
       // look at the memory guardian to get the next instruction
-      const rawInstruction = _MemoryGuardian.read(location.toString(16));
+      const rawInstruction = _MemoryGuardian.readL(location());
       try {
         const opCode = new OpCode(rawInstruction);
+        this.lastInstruction = opCode;
 
         // lookahead based on args to instructions
         for (let i = 0; i < opCode.numArgs; i++) {
           this.PC++;
-          opCode.args.push(_MemoryGuardian.read(this.PC.toString(16)));
+          opCode.args.push(_MemoryGuardian.readL(location()));
         }
 
         // execute that shit
@@ -110,12 +114,12 @@ namespace TSOS {
 
         // TEST: A9 02 8D 00 00 --> the A9 changes to 02
         case "8D": // STA: Store Acc in mem
-          _MemoryGuardian.write(arg, this.Acc.toString(16));
+          _MemoryGuardian.writeL(arg, this.Acc.toString(16));
           break;
 
         // TEST: A9 02 6d 01 00 --> Acc == 4
         case "6D": // ADC: read(address) + Acc --> Acc
-          this.Acc += _MemoryGuardian.readInt(arg);
+          this.Acc += _MemoryGuardian.readLInt(arg);
           break;
 
         // TEST: A2 02 00 --> X == 2
@@ -125,7 +129,7 @@ namespace TSOS {
 
         // TEST: AE 01 --> X == 1
         case "AE": // LDX: read(address) --> x
-          this.Xreg = _MemoryGuardian.readInt(arg);
+          this.Xreg = _MemoryGuardian.readLInt(arg);
           break;
 
         // TEST: A0 02 00 --> y == 2
@@ -135,7 +139,7 @@ namespace TSOS {
 
         // TEST: AC 01 00 --> y == 1
         case "AC": // LDY: read(address) --> y
-          this.Yreg = _MemoryGuardian.readInt(arg);
+          this.Yreg = _MemoryGuardian.readLInt(arg);
           break;
 
         // TEST: EA 00 --> nothing happens, just PC increments
@@ -150,7 +154,7 @@ namespace TSOS {
         // TEST: A2 01 EC 01 00 --> z == 1
         // TEST: A2 02 EC 00 00 --> z == 0
         case "EC": // CPX: (read(address) == X) ? Z = 1 : Z = 0
-          this.Zflag = _MemoryGuardian.readInt(arg) === this.Xreg ? 1 : 0;
+          this.Zflag = _MemoryGuardian.readLInt(arg) === this.Xreg ? 1 : 0;
           break;
 
         // TEST: D0 01 00 A9 01 00 --> Acc == 1
@@ -161,9 +165,9 @@ namespace TSOS {
 
         // TEST: EE 01 00 --> 01 turns to 02
         case "EE": // INC: read(address)++
-          _MemoryGuardian.write(
+          _MemoryGuardian.writeL(
             arg,
-            (_MemoryGuardian.readInt(arg) + 1).toString(16)
+            (_MemoryGuardian.readLInt(arg) + 1).toString(16)
           );
           break;
         // TEST: A2 01 A0 02 FF --> print 2
@@ -178,10 +182,10 @@ namespace TSOS {
             let asciiNum;
             for (
               let location = this.Yreg.toString(16),
-                asciiNum = _MemoryGuardian.readInt(location);
+                asciiNum = _MemoryGuardian.readLInt(location);
               asciiNum !== 0;
               location = (parseInt(location, 16) + 1).toString(16),
-                asciiNum = _MemoryGuardian.readInt(location)
+                asciiNum = _MemoryGuardian.readLInt(location)
             ) {
               let character = String.fromCharCode(asciiNum);
               _StdOut.putText(character);

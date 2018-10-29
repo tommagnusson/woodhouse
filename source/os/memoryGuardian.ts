@@ -23,6 +23,7 @@ namespace TSOS {
         this.segments.push(newSegment);
         this.segmentToIsOccupied.set(newSegment, false);
       }
+      console.log("created new segment", this);
     }
 
     public evacuate(process?: ProcessControlBlock) {
@@ -50,6 +51,7 @@ namespace TSOS {
       const firstAvailableSegment = Array.from(
         this.segmentToIsOccupied.keys()
       ).find(segment => !this.segmentToIsOccupied.get(segment));
+      console.log("first available", firstAvailableSegment);
 
       if (firstAvailableSegment === undefined) {
         throw new Error(`There is not enough memory to load a new program.`);
@@ -79,6 +81,23 @@ namespace TSOS {
       return newProcess;
     }
 
+    private logicalToPhysical(relativeLocation: string): string {
+      return (
+        parseInt(_Scheduler.executing.occupiedSegment.base, 16) +
+        parseInt(relativeLocation, 16)
+      ).toString(16);
+    }
+
+    // read using logical addressing --> physical addressing
+    public readL(relativeLocation: string): string {
+      const physicalAddress = this.logicalToPhysical(relativeLocation);
+      return this.read(physicalAddress);
+    }
+    // read using logical addressing and return a number
+    public readLInt(relativeLocation: string): number {
+      return parseInt(this.readL(relativeLocation), 16);
+    }
+
     public readInt(location: string): number {
       return parseInt(this.read(location), 16);
     }
@@ -86,6 +105,11 @@ namespace TSOS {
     public read(location: string): string {
       this.checkSegmentBounds(_Scheduler.executing.occupiedSegment, location);
       return this.memory.read(location);
+    }
+
+    public writeL(relativeLocation: string, value: string) {
+      const physicalAddress = this.logicalToPhysical(relativeLocation);
+      return this.write(physicalAddress, value);
     }
 
     public write(location: string, value: string) {

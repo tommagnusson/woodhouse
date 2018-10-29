@@ -184,9 +184,7 @@ namespace TSOS {
       Control.displayMemory(_Memory.dangerouslyExposeRaw());
       const code = opCode ? opCode.code : "--";
       Control.displayCPU(cpu.PC, code, cpu.Acc, cpu.Xreg, cpu.Yreg, cpu.Zflag);
-      _Scheduler
-        ? Control.displayPCB(_Scheduler.executing || null, cpu, code)
-        : null;
+      _Scheduler ? Control.displayPCB(_Scheduler.executing) : null;
     }
 
     public static displayCPU(counter, instruction, accumulator, x, y, z) {
@@ -205,7 +203,7 @@ namespace TSOS {
       }
     }
 
-    public static displayPCB(pcb: ProcessControlBlock, cpu: Cpu, code: string) {
+    public static displayPCB(pcb: ProcessControlBlock) {
       if (!pcb) {
         [
           "pcbPID",
@@ -223,17 +221,18 @@ namespace TSOS {
         });
         return;
       }
+      const code = pcb.instruction ? pcb.instruction.code.toString() : "";
       const pcbDisplayIdToValue = {
         pcbPID: pcb.pid.toString(),
         pcbState: pcb.status,
         pcbBase: pcb.occupiedSegment.base.toString(),
         pcbLimit: pcb.occupiedSegment.limit.toString(),
-        pcbCounter: cpu.PC.toString(),
+        pcbCounter: pcb.programCounter.toString(),
         pcbInstruction: code,
-        pcbAccumulator: cpu.Acc.toString(),
-        pcbX: cpu.Xreg.toString(),
-        pcbY: cpu.Yreg.toString(),
-        pcbZ: cpu.Zflag.toString()
+        pcbAccumulator: pcb.accumulator.toString(),
+        pcbX: pcb.xReg.toString(),
+        pcbY: pcb.yReg.toString(),
+        pcbZ: pcb.zFlag.toString()
       };
       for (let key of Object.keys(pcbDisplayIdToValue)) {
         document.getElementById(key).textContent = pcbDisplayIdToValue[
