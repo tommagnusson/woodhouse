@@ -80,6 +80,11 @@ namespace TSOS {
     }
 
     private contextSwitch(cpu: Cpu) {
+      _Kernel.krnTrace(
+        `Context switching from process ${this.executing.pid} to ${
+          this.readyQueue.peek().pid
+        }`
+      );
       // serialize executing
       this.executing.serialize(cpu);
       // put it back onto the ready q
