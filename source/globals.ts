@@ -16,16 +16,17 @@ const APP_VERSION: string = '1.0.0';
 
 const CPU_CLOCK_INTERVAL: number = 100; // This is in ms (milliseconds) so 1000 = 1 second.
 
-const TIMER_IRQ: number = 0; // Pages 23 (timer), 9 (interrupts), and 561 (interrupt priority).
-// NOTE: The timer is different from hardware/host clock pulses. Don't confuse these.
-const KEYBOARD_IRQ: number = 1;
-const LOAD_PROGRAM_IRQ: number = 2;
-const RUN_PROGRAM_IRQ: number = 3;
-const BREAK_PROGRAM_IRQ: number = 4;
-const ERR_PROGRAM_IRQ: number = 5;
-const REQ_CLEAR_MEM_IRQ: number = 6;
-const CONEXT_SWITCH_IRQ: number = 7;
-const RUN_ALL_PROGRAMS_IRQ: number = 8;
+enum IRQ {
+  TIMER_IRQ,
+  KEYBOARD_IRQ,
+  LOAD_PROGRAM_IRQ,
+  RUN_PROGRAM_IRQ,
+  BREAK_PROGRAM_IRQ,
+  ERR_PROGRAM_IRQ,
+  REQ_CLEAR_MEM_IRQ,
+  CONEXT_SWITCH_IRQ,
+  RUN_ALL_PROGRAMS_IRQ
+}
 
 enum ScheduleType {
   RoundRobin

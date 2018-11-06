@@ -129,27 +129,27 @@ namespace TSOS {
       this.krnTrace('Handling IRQ~' + irq);
 
       const interruptVector = {
-        [TIMER_IRQ]: this.krnTimerISR,
-        [KEYBOARD_IRQ]: () => {
+        [IRQ.TIMER_IRQ]: this.krnTimerISR,
+        [IRQ.KEYBOARD_IRQ]: () => {
           _krnKeyboardDriver.isr(params); // Kernel mode device driver
           _StdIn.handleInput();
         },
-        [LOAD_PROGRAM_IRQ]: () => {
+        [IRQ.LOAD_PROGRAM_IRQ]: () => {
           this.onLoadProgram(params[0]);
         },
-        [RUN_PROGRAM_IRQ]: () => {
+        [IRQ.RUN_PROGRAM_IRQ]: () => {
           this.onRunProgram(params[0]);
         },
-        [BREAK_PROGRAM_IRQ]: () => {
+        [IRQ.BREAK_PROGRAM_IRQ]: () => {
           this.onBreakProgram();
         },
-        [ERR_PROGRAM_IRQ]: () => {
+        [IRQ.ERR_PROGRAM_IRQ]: () => {
           this.onErrProgram(params[0]);
         },
-        [REQ_CLEAR_MEM_IRQ]: () => {
+        [IRQ.REQ_CLEAR_MEM_IRQ]: () => {
           this.onClearMem();
         },
-        [RUN_ALL_PROGRAMS_IRQ]: () => {
+        [IRQ.RUN_ALL_PROGRAMS_IRQ]: () => {
           this.onRunAllPrograms();
         }
       };

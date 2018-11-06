@@ -115,7 +115,7 @@ namespace TSOS {
         console.log('current instruction', new OpCode(rawInstruction));
         console.groupEnd();
         _StdOut.putText(ex.message);
-        _KernelInterruptQueue.enqueue(new Interrupt(ERR_PROGRAM_IRQ, []));
+        _KernelInterruptQueue.enqueue(new Interrupt(IRQ.ERR_PROGRAM_IRQ, []));
         this.reset();
       }
     }
@@ -170,7 +170,9 @@ namespace TSOS {
           break;
 
         case '00': // BRK
-          _KernelInterruptQueue.enqueue(new Interrupt(BREAK_PROGRAM_IRQ, []));
+          _KernelInterruptQueue.enqueue(
+            new Interrupt(IRQ.BREAK_PROGRAM_IRQ, [])
+          );
           this.reset();
           return true;
 
@@ -221,7 +223,9 @@ namespace TSOS {
           break;
         default:
           _StdOut.putSysTextLn(`Found invalid opcode ${opCode.code}.`);
-          _KernelInterruptQueue.enqueue(new Interrupt(BREAK_PROGRAM_IRQ, []));
+          _KernelInterruptQueue.enqueue(
+            new Interrupt(IRQ.BREAK_PROGRAM_IRQ, [])
+          );
           this.reset();
           return true;
       }

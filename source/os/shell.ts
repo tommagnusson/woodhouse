@@ -503,7 +503,7 @@ namespace TSOS {
       if (this.isValidProgram(program)) {
         _StdOut.putText('Nice program you have there.');
         _KernelInterruptQueue.enqueue(
-          new Interrupt(LOAD_PROGRAM_IRQ, [program])
+          new Interrupt(IRQ.LOAD_PROGRAM_IRQ, [program])
         );
       } else {
         // error message
@@ -528,15 +528,17 @@ namespace TSOS {
         _StdOut.putText('Please provide a single PID as an argument.');
         return;
       }
-      _KernelInterruptQueue.enqueue(new Interrupt(RUN_PROGRAM_IRQ, args));
+      _KernelInterruptQueue.enqueue(new Interrupt(IRQ.RUN_PROGRAM_IRQ, args));
     };
 
     public shellClearMem = args => {
-      _KernelInterruptQueue.enqueue(new Interrupt(REQ_CLEAR_MEM_IRQ, []));
+      _KernelInterruptQueue.enqueue(new Interrupt(IRQ.REQ_CLEAR_MEM_IRQ, []));
     };
 
     public shellRunall = args => {
-      _KernelInterruptQueue.enqueue(new Interrupt(RUN_ALL_PROGRAMS_IRQ, []));
+      _KernelInterruptQueue.enqueue(
+        new Interrupt(IRQ.RUN_ALL_PROGRAMS_IRQ, [])
+      );
     };
 
     public shellListProcesses = args => {
@@ -546,6 +548,10 @@ namespace TSOS {
           .map(p => p.pid)
           .toString()
       );
+    };
+
+    public shellKillProcess = args => {
+      // software interrupt
     };
   }
 }
