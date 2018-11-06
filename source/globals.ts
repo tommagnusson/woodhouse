@@ -11,8 +11,8 @@
 //
 // Global CONSTANTS (TypeScript 1.5 introduced const. Very cool.)
 //
-const APP_NAME: string = "Woodhouse"; // see: TV Show Archer
-const APP_VERSION: string = "1.0.0";
+const APP_NAME: string = 'Woodhouse'; // see: TV Show Archer
+const APP_VERSION: string = '1.0.0';
 
 const CPU_CLOCK_INTERVAL: number = 100; // This is in ms (milliseconds) so 1000 = 1 second.
 
@@ -46,7 +46,7 @@ var _Mode: number = 0; // (currently unused)  0 = Kernel Mode, 1 = User Mode.  S
 var _ProgramInput: HTMLTextAreaElement;
 var _Canvas: HTMLCanvasElement; // Initialized in Control.hostInit().
 var _DrawingContext: any; // = _Canvas.getContext("2d");  // Assigned here for type safety, but re-initialized in Control.hostInit() for OCD and logic.
-var _DefaultFontFamily: string = "sans"; // Ignored, I think. The was just a place-holder in 2008, but the HTML canvas may have use for it.
+var _DefaultFontFamily: string = 'sans'; // Ignored, I think. The was just a place-holder in 2008, but the HTML canvas may have use for it.
 var _DefaultFontSize: number = 13;
 var _FontHeightMargin: number = 4; // Additional space added to font size when advancing a line.
 
@@ -54,8 +54,8 @@ var _Trace: boolean = true; // Default the OS trace to be on.
 
 // The OS Kernel and its queues.
 var _Kernel: TSOS.Kernel;
-var _KernelInterruptQueue: TSOS.Queue;
-var _KernelInputQueue: TSOS.Queue;
+var _KernelInterruptQueue: TSOS.Queue<any>;
+var _KernelInputQueue: TSOS.Queue<any>;
 var _KernelBuffers: any[];
 
 // Standard input and output
@@ -80,7 +80,7 @@ var _hardwareClockID: number = null;
 var Glados: any = null; // This is the function Glados() in glados.js on Labouseur.com.
 var _GLaDOS: any = null; // If the above is linked in, this is the instantiated instance of Glados.
 
-var _Status: string = "";
+var _Status: string = '';
 
 var onDocumentLoad = function() {
   TSOS.Control.hostInit();

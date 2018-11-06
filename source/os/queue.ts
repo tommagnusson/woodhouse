@@ -9,8 +9,8 @@
    ------------ */
 
 namespace TSOS {
-  export class Queue {
-    constructor(public q = new Array()) {}
+  export class Queue<T> {
+    constructor(public q: T[] = []) {}
     public getSize() {
       return this.q.length;
     }
@@ -41,9 +41,9 @@ namespace TSOS {
     }
 
     public toString() {
-      var retVal = "";
+      var retVal = '';
       for (var i in this.q) {
-        retVal += "[" + this.q[i] + "] ";
+        retVal += '[' + this.q[i] + '] ';
       }
       return retVal;
     }

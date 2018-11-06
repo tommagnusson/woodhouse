@@ -4,8 +4,8 @@
 
 namespace TSOS {
   export class Scheduler {
-    readonly terminatedQueue = new Queue();
-    readonly readyQueue: Queue = new Queue();
+    readonly terminatedQueue: Queue<ProcessControlBlock> = new Queue();
+    readonly readyQueue: Queue<ProcessControlBlock> = new Queue();
 
     readonly residentMap: Map<number, ProcessControlBlock> = new Map();
     public executing: ProcessControlBlock = null;
@@ -86,6 +86,11 @@ namespace TSOS {
       this.readyQueue.enqueue(this.executing);
       // readyToExecuting
       this.readyToExecuting();
+    }
+
+    // executing union ready
+    public getActiveProcesses(): ProcessControlBlock[] {
+      return [...[this.executing].filter(pcb => pcb), ...this.readyQueue.q];
     }
 
     private readyToExecuting(): ProcessControlBlock {
