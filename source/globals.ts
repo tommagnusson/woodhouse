@@ -25,6 +25,7 @@ const BREAK_PROGRAM_IRQ: number = 4;
 const ERR_PROGRAM_IRQ: number = 5;
 const REQ_CLEAR_MEM_IRQ: number = 6;
 const CONEXT_SWITCH_IRQ: number = 7;
+const RUN_ALL_PROGRAMS_IRQ: number = 8;
 
 enum ScheduleType {
   RoundRobin

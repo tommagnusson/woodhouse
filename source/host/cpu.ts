@@ -51,8 +51,26 @@ namespace TSOS {
 
     public lastInstruction: OpCode;
 
-    public cycle(process: ProcessControlBlock): void {
+    private deserialize(process: ProcessControlBlock): void {
+      this.PC = process.programCounter;
+      this.Acc = process.accumulator;
+      this.Xreg = process.xReg;
+      this.Yreg = process.yReg;
+      this.Zflag = process.zFlag;
+    }
+
+    // verbose to include parameter destructuring with type info but oh well...
+    public cycle({
+      executing,
+      didContextSwitch
+    }: {
+      executing: ProcessControlBlock;
+      didContextSwitch: boolean;
+    }): void {
       _Kernel.krnTrace("CPU cycle");
+      if (didContextSwitch) {
+        this.deserialize(executing);
+      }
 
       // needs to be a function because lookahead modifies the PC
       const location = () => this.PC.toString(16);

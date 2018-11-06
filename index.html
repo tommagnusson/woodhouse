@@ -13,6 +13,13 @@
         Woodhouse - a subservient operating system
     </title>
 
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+
+    <!-- Lodash, complex array operations -->
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
+
     <!-- Globals CONSTANTS and _Variables. Must included be first. -->
     <script type="text/javascript" src="distrib/globals.js"></script>
 
@@ -43,7 +50,7 @@
     <!-- Other Routines -->
     <script type="text/javascript" src="distrib/utils.js"></script>
     <!-- Uncomment the line below to enable GLaDOS testing. -->
-    <!-- <script type="text/javascript" src="http://alanclasses.github.io/TSOS/test/glados-ip2.js"></script> -->
+    <script type="text/javascript" src="http://alanclasses.github.io/TSOS/test/glados-ip3.js"></script>
 
 </head>
 
@@ -144,7 +151,7 @@
             </div>
         </div>
         <div class="pcb-group" style="grid-column: 2">
-            <label class="text-light">PCB</label>
+            <label class="text-light">Process Control Blocks</label>
             <div class="pcb">
                 <table class="table table-light text-dark text-center">
                     <thead>
@@ -160,27 +167,10 @@
                         <th>Z</th>
                     </thead>
                     <tbody>
-                        <tr scope="row">
-                            <td id="pcbPID"></td>
-                            <td id="pcbState"></td>
-                            <td id="pcbBase"></td>
-                            <td id="pcbLimit"></td>
-                            <td id="pcbCounter">
-                            </td>
-                            <td id="pcbInstruction">
-                            </td>
-                            <td id="pcbAccumulator">
-                            </td>
-                            <td id="pcbX">
-                            </td>
-                            <td id="pcbY">
-                            </td>
-                            <td id="pcbZ">
-                            </td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
+
         </div>
     </div>
 

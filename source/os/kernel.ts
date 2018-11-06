@@ -158,6 +158,9 @@ namespace TSOS {
         },
         [REQ_CLEAR_MEM_IRQ]: () => {
           this.onClearMem();
+        },
+        [RUN_ALL_PROGRAMS_IRQ]: () => {
+          this.onRunAllPrograms();
         }
       };
 
@@ -169,6 +172,11 @@ namespace TSOS {
           "Invalid Interrupt Request. irq=" + irq + " params=[" + params + "]"
         );
       }
+    }
+
+    private onRunAllPrograms() {
+      const allPcbs = Array.from(_Scheduler.residentMap.values());
+      allPcbs.forEach(pcb => this.onRunProgram(pcb.pid.toString()));
     }
 
     private onClearMem() {

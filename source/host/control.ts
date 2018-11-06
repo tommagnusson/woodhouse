@@ -33,48 +33,48 @@ namespace TSOS {
       // This is called from index.html's onLoad event via the onDocumentLoad function pointer.
 
       let started = false;
-      document.addEventListener("keydown", e => {
-        if (e.key === " " && !started) {
+      document.addEventListener('keydown', e => {
+        if (e.key === ' ' && !started) {
           e.preventDefault();
-          document.getElementById("btnStartOS").click();
+          document.getElementById('btnStartOS').click();
           started = true;
         }
       });
 
       // Get a global reference to the canvas.  TODO: Should we move this stuff into a Display Device Driver?
-      _Canvas = <HTMLCanvasElement>document.getElementById("display");
-      _Canvas.style.backgroundColor = "white"; // reset perhaps from a BSOD
+      _Canvas = <HTMLCanvasElement>document.getElementById('display');
+      _Canvas.style.backgroundColor = 'white'; // reset perhaps from a BSOD
 
       // Get a global reference to the program input text area.
       _ProgramInput = <HTMLTextAreaElement>(
-        document.getElementById("taProgramInput")
+        document.getElementById('taProgramInput')
       );
 
       // Get a global reference to the drawing context.
-      _DrawingContext = _Canvas.getContext("2d");
+      _DrawingContext = _Canvas.getContext('2d');
 
       // Enable the added-in canvas text functions (see canvastext.ts for provenance and details).
       CanvasTextFunctions.enable(_DrawingContext); // Text functionality is now built in to the HTML5 canvas. But this is old-school, and fun, so we'll keep it.
 
       // Clear the log text box.
-      (<HTMLInputElement>document.getElementById("taHostLog")).value = "";
+      (<HTMLInputElement>document.getElementById('taHostLog')).value = '';
 
       // Set focus on the start button.
-      (<HTMLInputElement>document.getElementById("btnStartOS")).focus();
+      (<HTMLInputElement>document.getElementById('btnStartOS')).focus();
 
       // updates the time and status
       const tick = () => {
         const now = new Date(Date.now());
-        document.getElementById("date").textContent =
-          now.toLocaleDateString() + " " + now.toLocaleTimeString();
-        document.getElementById("status").textContent = _Status;
+        document.getElementById('date').textContent =
+          now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+        document.getElementById('status').textContent = _Status;
       };
       // init the clock display
       setInterval(tick, 500);
 
       // Check for our testing and enrichment core, which
       // may be referenced here (from index.html) as function Glados().
-      if (typeof Glados === "function") {
+      if (typeof Glados === 'function') {
         // function Glados() is here, so instantiate Her into
         // the global (and properly capitalized) _GLaDOS variable.
         _GLaDOS = new Glados();
@@ -82,7 +82,7 @@ namespace TSOS {
       }
     }
 
-    public static hostLog(msg: string, source: string = "?"): void {
+    public static hostLog(msg: string, source: string = '?'): void {
       // Note the OS CLOCK.
       var clock: number = _OSclock;
 
@@ -91,19 +91,19 @@ namespace TSOS {
 
       // Build the log string.
       var str: string =
-        "({ clock:" +
+        '({ clock:' +
         clock +
-        ", source:" +
+        ', source:' +
         source +
-        ", msg:" +
+        ', msg:' +
         msg +
-        ", now:" +
+        ', now:' +
         now +
-        " })" +
-        "\n";
+        ' })' +
+        '\n';
 
       // Update the log console.
-      var taLog = <HTMLInputElement>document.getElementById("taHostLog");
+      var taLog = <HTMLInputElement>document.getElementById('taHostLog');
       taLog.value = str + taLog.value;
 
       // TODO in the future: Optionally update a log database or some streaming service.
@@ -118,12 +118,12 @@ namespace TSOS {
 
       // .. enable the Halt and Reset buttons ...
       (<HTMLButtonElement>(
-        document.getElementById("btnHaltOS")
+        document.getElementById('btnHaltOS')
       )).disabled = false;
-      (<HTMLButtonElement>document.getElementById("btnReset")).disabled = false;
+      (<HTMLButtonElement>document.getElementById('btnReset')).disabled = false;
 
       // .. set focus on the OS console display ...
-      document.getElementById("display").focus();
+      document.getElementById('display').focus();
 
       // ... Create and initialize the CPU (because it's part of the hardware)  ...
       _Memory = new Memory();
@@ -141,8 +141,8 @@ namespace TSOS {
     }
 
     public static hostBtnHaltOS_click(btn): void {
-      Control.hostLog("Emergency halt", "host");
-      Control.hostLog("Attempting Kernel shutdown.", "host");
+      Control.hostLog('Emergency halt', 'host');
+      Control.hostLog('Attempting Kernel shutdown.', 'host');
       // Call the OS shutdown routine.
       _Kernel.krnShutdown();
 
@@ -151,18 +151,18 @@ namespace TSOS {
 
     public static onToggleStep(btn): void {
       // toggle
-      btn.dataset.state = btn.dataset.state === "on" ? "off" : "on";
+      btn.dataset.state = btn.dataset.state === 'on' ? 'off' : 'on';
 
-      if (btn.dataset.state === "on") {
-        btn.classList.replace("btn-outline-info", "btn-info");
-        document.getElementById("btnStepOS").removeAttribute("disabled");
+      if (btn.dataset.state === 'on') {
+        btn.classList.replace('btn-outline-info', 'btn-info');
+        document.getElementById('btnStepOS').removeAttribute('disabled');
         // turn on single step
         _SingleStepIsEnabled = true;
       } else {
-        btn.classList.replace("btn-info", "btn-outline-info");
+        btn.classList.replace('btn-info', 'btn-outline-info');
         document
-          .getElementById("btnStepOS")
-          .setAttribute("disabled", "disabled");
+          .getElementById('btnStepOS')
+          .setAttribute('disabled', 'disabled');
         // turn off
         _SingleStepIsEnabled = false;
       }
@@ -182,9 +182,9 @@ namespace TSOS {
 
     public static renderStats(cpu: Cpu, opCode?: OpCode) {
       Control.displayMemory(_Memory.dangerouslyExposeRaw());
-      const code = opCode ? opCode.code : "--";
+      const code = opCode ? opCode.code : '--';
       Control.displayCPU(cpu.PC, code, cpu.Acc, cpu.Xreg, cpu.Yreg, cpu.Zflag);
-      _Scheduler ? Control.displayPCB(_Scheduler.executing) : null;
+      Control.displayAllPCBs(_Scheduler);
     }
 
     public static displayCPU(counter, instruction, accumulator, x, y, z) {
@@ -203,46 +203,122 @@ namespace TSOS {
       }
     }
 
-    public static displayPCB(pcb: ProcessControlBlock) {
-      if (!pcb) {
-        [
-          "pcbPID",
-          "pcbState",
-          "pcbBase",
-          "pcbLimit",
-          "pcbCounter",
-          "pcbInstruction",
-          "pcbAccumulator",
-          "pcbX",
-          "pcbY",
-          "pcbZ"
-        ].forEach(id => {
-          document.getElementById(id).textContent = "";
-        });
-        return;
+    public static displayPCBGroup(pcbs: ProcessControlBlock[]): void {
+      // $ prefix refers to the dom element rather than the plain js object which contains the data
+      const $pcbs = document.querySelector(`.pcb tbody`);
+      const allPIDs = pcbs.map(pcb => pcb.pid);
+
+      const alreadyCreatedPIDs = Array.from(this.createdPCBDoms.keys());
+
+      // allPIDs intersection createdPCBDoms = pcbsToUpdate
+      const pcbsToUpdate = _.intersection(allPIDs, alreadyCreatedPIDs);
+
+      // createdPCBDoms difference allPIDs = pcbsToRemove
+      const pcbsToRemove = _.difference(alreadyCreatedPIDs, allPIDs);
+
+      // allPIDs difference createdPCBDoms = pcbsToCreate
+      const pcbsToCreate = _.difference(allPIDs, alreadyCreatedPIDs);
+
+      // create a hashmap for fast lookup when getting the actual pcbs
+      const pidToPcb = _.keyBy(pcbs, pcb => pcb.pid);
+
+      for (let pid of pcbsToUpdate) {
+        this.updatePCBDom(pidToPcb[pid]);
       }
-      const code = pcb.instruction ? pcb.instruction.code.toString() : "";
+      for (let pid of pcbsToCreate) {
+        this.createPCBDom(pidToPcb[pid]);
+      }
+      for (let pid of pcbsToRemove) {
+        this.removePCBDom(pidToPcb[pid]);
+      }
+    }
+
+    public static removePCBDom(pcb: ProcessControlBlock): void {
+      const $data = document.querySelector(`.table [data-pid="${pcb.pid}"]`);
+      $data.remove();
+      this.createdPCBDoms.delete(pcb.pid);
+    }
+
+    public static displayAllPCBs(sched: Scheduler): void {
+      if (sched) {
+        const toBeDisplayed = Control.displayPCBGroup([
+          ...[sched.executing].filter(s => s), // maybe clever but it's cool... ignore null executing
+          ...sched.readyQueue.q,
+          ...sched.terminatedQueue.q
+        ]);
+      }
+    }
+
+    public static updatePCBDom(pcb: ProcessControlBlock): void {
+      // update all the fields with those values
       const pcbDisplayIdToValue = {
         pcbPID: pcb.pid.toString(),
         pcbState: pcb.status,
         pcbBase: pcb.occupiedSegment.base.toString(),
         pcbLimit: pcb.occupiedSegment.limit.toString(),
+        pcbInstruction: pcb.instruction ? pcb.instruction.code || '--' : '--',
         pcbCounter: pcb.programCounter.toString(),
-        pcbInstruction: code,
+        pcbAccumulator: pcb.accumulator.toString(),
+        pcbX: pcb.xReg.toString(),
+        pcbY: pcb.yReg.toString(),
+        pcbZ: pcb.zFlag.toString()
+      };
+
+      for (let key of Object.keys(pcbDisplayIdToValue)) {
+        const $data = document.querySelector(
+          `.table [data-pid="${pcb.pid}"] .${key}`
+        );
+        $data.textContent = pcbDisplayIdToValue[key].toUpperCase();
+      }
+    }
+
+    // memoize createdPCBDoms for faster updates (rather than rerender the entire list)
+    // Map<pid, pcb row>
+    private static createdPCBDoms: Map<number, HTMLTableRowElement> = new Map();
+
+    public static createPCBDom(pcb: ProcessControlBlock): HTMLTableRowElement {
+      const $row = document.createElement(`tr`);
+      $row.setAttribute(`scope`, `row`);
+      $row.dataset.pid = pcb.pid.toString();
+
+      const pcbDisplayIdToValue = {
+        pcbPID: pcb.pid.toString(),
+        pcbState: pcb.status,
+        pcbBase: pcb.occupiedSegment.base.toString(),
+        pcbLimit: pcb.occupiedSegment.limit.toString(),
+        pcbInstruction: pcb.instruction ? pcb.instruction.code || '--' : '--',
+        pcbCounter: pcb.programCounter.toString(),
         pcbAccumulator: pcb.accumulator.toString(),
         pcbX: pcb.xReg.toString(),
         pcbY: pcb.yReg.toString(),
         pcbZ: pcb.zFlag.toString()
       };
       for (let key of Object.keys(pcbDisplayIdToValue)) {
-        document.getElementById(key).textContent = pcbDisplayIdToValue[
-          key
-        ].toUpperCase();
+        const $data = document.createElement(`td`);
+        $data.classList.add(key);
+        $data.textContent = pcbDisplayIdToValue[key].toUpperCase();
+        $row.appendChild($data);
       }
+      document.querySelector(`.pcb .table tbody`).appendChild($row);
+      this.createdPCBDoms.set(pcb.pid, $row);
+      return $row;
     }
 
+    /* *<tr scope="row">
+                            <td id="pcbPID"></td>
+                            <td id="pcbState"></td>
+                            <td id="pcbBase"></td>
+                            <td id="pcbLimit"></td>
+                            <td id="pcbCounter"></td>
+                            <td id="pcbInstruction"></td>
+                            <td id="pcbAccumulator"></td>
+                            <td id="pcbX"></td>
+                            <td id="pcbY"></td>
+                            <td id="pcbZ"></td>
+                        </tr>*/
+
     public static displayMemory(memory: string[]) {
-      const memoryTable = document.querySelector(".memory table tbody");
+      const memoryTable = document.querySelector('.memory table tbody');
 
       // clear existing garbage in there
       while (memoryTable.firstChild) {
@@ -253,18 +329,18 @@ namespace TSOS {
       for (let location = 0; location < memory.length; location += 8) {
         const byte = memory.slice(location, location + 8);
 
-        const byteRow = document.createElement("tr");
+        const byteRow = document.createElement('tr');
 
-        const addressLabel = document.createElement("th");
-        addressLabel.setAttribute("scope", "row");
+        const addressLabel = document.createElement('th');
+        addressLabel.setAttribute('scope', 'row');
         addressLabel.textContent = `0x${location.toString(16)}`;
 
         byteRow.appendChild(addressLabel);
 
         for (let i = 0; i < byte.length; i++) {
           const bit = byte[i];
-          const bitCell = document.createElement("td");
-          bitCell.setAttribute("id", `location${location + i}`);
+          const bitCell = document.createElement('td');
+          bitCell.setAttribute('id', `location${location + i}`);
           bitCell.textContent = bit;
           byteRow.appendChild(bitCell);
         }

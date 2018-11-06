@@ -34,7 +34,7 @@ namespace TSOS {
       return !!(this.executing || this.readyQueue.peek());
     }
 
-    public next(): ProcessControlBlock {
+    public next() {
       if (!this.executing) {
         this.readyToExecuting();
         if (this.executing === null) {
@@ -52,7 +52,10 @@ namespace TSOS {
         console.log("context switched");
         this.contextSwitch(_CPU);
       }
-      return this.executing;
+      return {
+        executing: this.executing,
+        didContextSwitch: shouldContextSwitch
+      };
     }
 
     public requestCPUExecution(pid: number): boolean {
