@@ -62,13 +62,13 @@ namespace TSOS {
     // verbose to include parameter destructuring with type info but oh well...
     public cycle({
       executing,
-      didContextSwitch
+      shouldDeserializePCB
     }: {
       executing: ProcessControlBlock;
-      didContextSwitch: boolean;
+      shouldDeserializePCB: boolean;
     }): void {
-      _Kernel.krnTrace("CPU cycle");
-      if (didContextSwitch) {
+      _Kernel.krnTrace('CPU cycle');
+      if (shouldDeserializePCB) {
         this.deserialize(executing);
       }
 
@@ -108,7 +108,12 @@ namespace TSOS {
         //   }
         // ]);
       } catch (ex) {
+        console.group('CPU shit the bed');
         console.error(ex);
+        console.log(_Scheduler);
+        console.log(this);
+        console.log('current instruction', new OpCode(rawInstruction));
+        console.groupEnd();
         _StdOut.putText(ex.message);
         _KernelInterruptQueue.enqueue(new Interrupt(ERR_PROGRAM_IRQ, []));
         this.reset();
@@ -121,68 +126,68 @@ namespace TSOS {
 
       switch (opCode.code) {
         // TEST: A9 01 00 -> Acc == 1
-        case "A9": // LDA: constant --> Acc
+        case 'A9': // LDA: constant --> Acc
           this.Acc = parseInt(arg, 16);
           break;
 
         // TEST: AD 01 00 -> Acc == 1
-        case "AD": // LDA: Acc from mem
-          this.Acc = parseInt(_MemoryGuardian.read(arg), 16);
+        case 'AD': // LDA: Acc from mem
+          this.Acc = parseInt(_MemoryGuardian.readL(arg), 16);
           break;
 
         // TEST: A9 02 8D 00 00 --> the A9 changes to 02
-        case "8D": // STA: Store Acc in mem
+        case '8D': // STA: Store Acc in mem
           _MemoryGuardian.writeL(arg, this.Acc.toString(16));
           break;
 
         // TEST: A9 02 6d 01 00 --> Acc == 4
-        case "6D": // ADC: read(address) + Acc --> Acc
+        case '6D': // ADC: read(address) + Acc --> Acc
           this.Acc += _MemoryGuardian.readLInt(arg);
           break;
 
         // TEST: A2 02 00 --> X == 2
-        case "A2": // LDX: constant --> x
+        case 'A2': // LDX: constant --> x
           this.Xreg = parseInt(arg, 16);
           break;
 
         // TEST: AE 01 --> X == 1
-        case "AE": // LDX: read(address) --> x
+        case 'AE': // LDX: read(address) --> x
           this.Xreg = _MemoryGuardian.readLInt(arg);
           break;
 
         // TEST: A0 02 00 --> y == 2
-        case "A0": // LDY: constant --> y
+        case 'A0': // LDY: constant --> y
           this.Yreg = parseInt(arg, 16);
           break;
 
         // TEST: AC 01 00 --> y == 1
-        case "AC": // LDY: read(address) --> y
+        case 'AC': // LDY: read(address) --> y
           this.Yreg = _MemoryGuardian.readLInt(arg);
           break;
 
         // TEST: EA 00 --> nothing happens, just PC increments
-        case "EA": // SPORTS, IT'S IN THE GAME
+        case 'EA': // SPORTS, IT'S IN THE GAME
           break;
 
-        case "00": // BRK
+        case '00': // BRK
           _KernelInterruptQueue.enqueue(new Interrupt(BREAK_PROGRAM_IRQ, []));
           this.reset();
           return true;
 
         // TEST: A2 01 EC 01 00 --> z == 1
         // TEST: A2 02 EC 00 00 --> z == 0
-        case "EC": // CPX: (read(address) == X) ? Z = 1 : Z = 0
+        case 'EC': // CPX: (read(address) == X) ? Z = 1 : Z = 0
           this.Zflag = _MemoryGuardian.readLInt(arg) === this.Xreg ? 1 : 0;
           break;
 
         // TEST: D0 01 00 A9 01 00 --> Acc == 1
         // TEST: D0 00 --> infinite execution
-        case "D0": // BNE: z == 0 ? PC = wrap(arg)
+        case 'D0': // BNE: z == 0 ? PC = wrap(arg)
           this.PC += this.Zflag === 0 ? parseInt(arg, 16) : 0;
           break;
 
         // TEST: EE 01 00 --> 01 turns to 02
-        case "EE": // INC: read(address)++
+        case 'EE': // INC: read(address)++
           _MemoryGuardian.writeL(
             arg,
             (_MemoryGuardian.readLInt(arg) + 1).toString(16)
@@ -192,7 +197,7 @@ namespace TSOS {
         // A0 LDY w C
         // A2 LDX w C
         // TEST: A2 02 A0 05 FF 68 69 00 --> print "hi"
-        case "FF": // SYS: x == 01 ? print y int :? x == 02 print read(y) string
+        case 'FF': // SYS: x == 01 ? print y int :? x == 02 print read(y) string
           if (this.Xreg === 1) {
             _StdOut.putText(this.Yreg.toString());
           } else if (this.Xreg === 2) {

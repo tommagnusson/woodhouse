@@ -22,7 +22,7 @@ namespace TSOS {
     //
     public krnBootstrap() {
       // Page 8. {
-      Control.hostLog("bootstrap", "host"); // Use hostLog because we ALWAYS want this, even if _Trace is off.
+      Control.hostLog('bootstrap', 'host'); // Use hostLog because we ALWAYS want this, even if _Trace is off.
 
       _MemoryGuardian = new MemoryGuardian(_Memory);
       // Initialize our global queues.
@@ -39,7 +39,7 @@ namespace TSOS {
       _StdOut = _Console;
 
       // Load the Keyboard Device Driver
-      this.krnTrace("Loading the keyboard device driver.");
+      this.krnTrace('Loading the keyboard device driver.');
       _krnKeyboardDriver = new DeviceDriverKeyboard(); // Construct it.
       _krnKeyboardDriver.driverEntry(); // Call the driverEntry() initialization routine.
       this.krnTrace(_krnKeyboardDriver.status);
@@ -49,11 +49,11 @@ namespace TSOS {
       //
 
       // Enable the OS Interrupts.  (Not the CPU clock interrupt, as that is done in the hardware sim.)
-      this.krnTrace("Enabling the interrupts.");
+      this.krnTrace('Enabling the interrupts.');
       this.krnEnableInterrupts();
 
       // Launch the shell.
-      this.krnTrace("Creating and Launching the shell.");
+      this.krnTrace('Creating and Launching the shell.');
       _OsShell = new Shell();
 
       _Scheduler = new Scheduler();
@@ -69,16 +69,16 @@ namespace TSOS {
     }
 
     public krnShutdown() {
-      this.krnTrace("begin shutdown OS");
+      this.krnTrace('begin shutdown OS');
       // TODO: Check for running processes.  If there are some, alert and stop. Else...
       // ... Disable the Interrupts.
-      this.krnTrace("Disabling the interrupts.");
+      this.krnTrace('Disabling the interrupts.');
       this.krnDisableInterrupts();
       //
       // Unload the Device Drivers?
       // More?
       //
-      this.krnTrace("end shutdown OS");
+      this.krnTrace('end shutdown OS');
       // Stop the interval that's simulating our clock pulse.
       clearInterval(_hardwareClockID);
     }
@@ -105,7 +105,7 @@ namespace TSOS {
         _ShouldStep = false;
       } else {
         // If there are no interrupts and there is nothing being executed then just be idle.
-        this.krnTrace("Idle");
+        this.krnTrace('Idle');
       }
     }
 
@@ -130,13 +130,13 @@ namespace TSOS {
     }
 
     public krnDisplayCPU() {
-      Control.displayCPU("-", "--", "-", "-", "-", "-");
+      Control.displayCPU('-', '--', '-', '-', '-', '-');
     }
 
     public krnInterruptHandler(irq, params) {
       // This is the Interrupt Handler Routine.  See pages 8 and 560.
       // Trace our entrance here so we can compute Interrupt Latency by analyzing the log file later on. Page 766.
-      this.krnTrace("Handling IRQ~" + irq);
+      this.krnTrace('Handling IRQ~' + irq);
 
       const interruptVector = {
         [TIMER_IRQ]: this.krnTimerISR,
@@ -169,7 +169,7 @@ namespace TSOS {
         maybeFn();
       } else {
         this.krnTrapError(
-          "Invalid Interrupt Request. irq=" + irq + " params=[" + params + "]"
+          'Invalid Interrupt Request. irq=' + irq + ' params=[' + params + ']'
         );
       }
     }
@@ -181,7 +181,7 @@ namespace TSOS {
 
     private onClearMem() {
       _MemoryGuardian.evacuate();
-      _StdOut.putSysTextLn("Cleared memory.");
+      _StdOut.putSysTextLn('Cleared memory.');
     }
 
     private stopRunningProgram(makeMessage) {
@@ -237,7 +237,7 @@ namespace TSOS {
     }
 
     public krnTimerISR() {
-      console.log("timer");
+      console.log('timer');
       // The built-in TIMER (not clock) Interrupt Service Routine (as opposed to an ISR coming from a device driver). {
       // Check multiprogramming parameters and enforce quanta here. Call the scheduler / context switch here if necessary.
     }
@@ -263,21 +263,21 @@ namespace TSOS {
     public krnTrace(msg: string) {
       // Check globals to see if trace is set ON.  If so, then (maybe) log the message.
       if (_Trace) {
-        if (msg === "Idle") {
+        if (msg === 'Idle') {
           // We can't log every idle clock pulse because it would lag the browser very quickly.
           if (_OSclock % 10 == 0) {
             // Check the CPU_CLOCK_INTERVAL in globals.ts for an
             // idea of the tick rate and adjust this line accordingly.
-            Control.hostLog(msg, "OS");
+            Control.hostLog(msg, 'OS');
           }
         } else {
-          Control.hostLog(msg, "OS");
+          Control.hostLog(msg, 'OS');
         }
       }
     }
 
     public krnTrapError(msg) {
-      Control.hostLog("OS ERROR - TRAP: " + msg);
+      Control.hostLog('OS ERROR - TRAP: ' + msg);
       _OsShell.shellCrash();
     }
   }

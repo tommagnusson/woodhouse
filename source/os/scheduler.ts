@@ -16,7 +16,7 @@ namespace TSOS {
 
     public requestGracefulTermination(): boolean {
       this.terminatedQueue.enqueue(this.executing);
-      this.executing.status = "terminated";
+      this.executing.status = 'terminated';
       this.executing = null;
       _CPU.isExecuting = false;
       return this.executing === null;
@@ -24,7 +24,7 @@ namespace TSOS {
 
     public requestResidency(program: string): ProcessControlBlock {
       const process = _MemoryGuardian.load(program);
-      process.status = "resident";
+      process.status = 'resident';
       this.residentMap.set(process.pid, process);
       return process;
     }
@@ -35,7 +35,9 @@ namespace TSOS {
     }
 
     public next() {
+      let didBreakProgram = false;
       if (!this.executing) {
+        didBreakProgram = true;
         this.readyToExecuting();
         if (this.executing === null) {
           return null;
@@ -49,12 +51,11 @@ namespace TSOS {
         !this.readyQueue.isEmpty();
 
       if (shouldContextSwitch) {
-        console.log("context switched");
         this.contextSwitch(_CPU);
       }
       return {
         executing: this.executing,
-        didContextSwitch: shouldContextSwitch
+        shouldDeserializePCB: shouldContextSwitch || didBreakProgram
       };
     }
 
@@ -74,14 +75,11 @@ namespace TSOS {
       const process = this.residentMap.get(pid);
       this.residentMap.delete(pid);
       this.readyQueue.enqueue(process);
-      process.status = "ready";
+      process.status = 'ready';
       return process;
     }
 
     private contextSwitch(cpu: Cpu) {
-      console.log("ready", this.readyQueue);
-      console.log("resident", this.residentMap);
-      console.log("executing", this.executing);
       // serialize executing
       this.executing.serialize(cpu);
       // put it back onto the ready q
@@ -95,7 +93,7 @@ namespace TSOS {
         return null;
       }
       this.executing = this.readyQueue.dequeue();
-      this.executing.status = "running";
+      this.executing.status = 'running';
       return this.executing;
     }
   }
