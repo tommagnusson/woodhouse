@@ -183,11 +183,26 @@ namespace TSOS {
         new ShellCommand(
           this.shellListProcesses,
           'ps',
-          '- lists the pids of all running processes.'
+          '- lists the pids of all running processes'
         )
       );
 
       // kill <id> - kills the specified process id.
+      this.commandList.push(
+        new ShellCommand(
+          this.shellKillProcess,
+          'kill',
+          '<pid> - kills the process with the given pid'
+        )
+      );
+
+      this.commandList.push(
+        new ShellCommand(
+          this.shellSetQuantum,
+          'quantum',
+          '<int> - set the round robin quantum in clock cycles'
+        )
+      );
 
       //
       // Display the initial prompt.
@@ -552,6 +567,25 @@ namespace TSOS {
 
     public shellKillProcess = args => {
       // software interrupt
+      const pid = args[0];
+      console.log(_Scheduler.getActiveProcesses());
+      if (!_Scheduler.getActiveProcesses().some(p => p.pid === parseInt(pid))) {
+        _StdOut.putText(
+          `Terribly sorry, I couldn't find process ${pid} to kill. Are you sure it's active? (I can't kill resident processes).`
+        );
+      } else {
+        _KernelInterruptQueue.enqueue(new Interrupt(IRQ.KILL_PROGRAM, [pid]));
+      }
+    };
+
+    public shellSetQuantum = args => {
+      const newQuantum = parseInt(args[0]);
+      if (newQuantum < 0) {
+        _StdOut.putText(`Terribly sorry, you must set a quantum above 0`);
+        return;
+      }
+      RoundRobinSchedule.quantum = newQuantum;
+      _StdOut.putText(`Quantum set to ${RoundRobinSchedule.quantum}`);
     };
   }
 }

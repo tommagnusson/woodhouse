@@ -9,16 +9,19 @@ namespace TSOS {
 
     constructor() {}
 
-    public shouldContextSwitch(pid: number): boolean {
+    public didCycle(pid: number) {
       if (this.lastPidExecuted === pid) {
         this.currentQuantum++;
       }
-      const shouldSwitch = this.currentQuantum === RoundRobinSchedule.quantum;
       this.lastPidExecuted = pid;
-      if (shouldSwitch) {
-        this.currentQuantum = 0;
-      }
-      return shouldSwitch;
+    }
+
+    public didContextSwitch() {
+      this.currentQuantum = 0;
+    }
+
+    public shouldContextSwitch(): boolean {
+      return this.currentQuantum === RoundRobinSchedule.quantum;
     }
   }
 }

@@ -14,12 +14,27 @@ namespace TSOS {
 
     constructor() {}
 
-    public requestGracefulTermination(): boolean {
-      this.terminatedQueue.enqueue(this.executing);
-      this.executing.status = 'terminated';
-      this.executing = null;
+    public updateStats() {
+      this.readyQueue.q.forEach(p => p.cyclesInReady++);
+      this.executing.cyclesExecuting++;
+    }
+
+    public requestGracefulTermination(pid): boolean {
+      const terminatedProcess = this.getActiveProcesses().find(
+        p => p.pid === parseInt(pid)
+      );
+      this.terminatedQueue.enqueue(terminatedProcess);
+      terminatedProcess.status = 'terminated';
+      if (this.readyQueue.q.some(p => p.pid === terminatedProcess.pid)) {
+        this.readyQueue.q = this.readyQueue.q.filter(
+          p => p.pid !== terminatedProcess.pid
+        );
+      } else {
+        // must be the executing one
+        this.executing = null;
+      }
       _CPU.isExecuting = false;
-      return this.executing === null;
+      return true;
     }
 
     public requestResidency(program: string): ProcessControlBlock {
@@ -35,28 +50,13 @@ namespace TSOS {
     }
 
     public next() {
-      let didBreakProgram = false;
       if (!this.executing) {
-        didBreakProgram = true;
         this.readyToExecuting();
         if (this.executing === null) {
           return null;
         }
       }
-
-      // both the scheduling algorithm dictates it,
-      // and we would be switching to a different process
-      const shouldContextSwitch =
-        this.scheduleType.shouldContextSwitch(this.executing.pid) &&
-        !this.readyQueue.isEmpty();
-
-      if (shouldContextSwitch) {
-        this.contextSwitch(_CPU);
-      }
-      return {
-        executing: this.executing,
-        shouldDeserializePCB: shouldContextSwitch || didBreakProgram
-      };
+      return this.executing;
     }
 
     public requestCPUExecution(pid: number): boolean {
@@ -79,18 +79,35 @@ namespace TSOS {
       return process;
     }
 
-    private contextSwitch(cpu: Cpu) {
+    // returns true if actually context switched, false otherwise
+    public contextSwitch(cpu: Cpu) {
+      if (this.readyQueue.isEmpty()) {
+        _Kernel.krnTrace(`Tried to context switch to an empty ready queue.`);
+        return;
+      }
       _Kernel.krnTrace(
-        `Context switching from process ${this.executing.pid} to ${
-          this.readyQueue.peek().pid
-        }`
+        `Context switching from process ${
+          this.executing ? this.executing.pid : `none`
+        } to ${this.readyQueue.peek().pid}`
       );
+
+      // a program naturally ended or got killed
+      if (!this.executing) {
+        this.readyToExecuting();
+        cpu.deserialize(this.executing);
+        return;
+      }
+
       // serialize executing
       this.executing.serialize(cpu);
       // put it back onto the ready q
       this.readyQueue.enqueue(this.executing);
       // readyToExecuting
       this.readyToExecuting();
+      if (this.executing) {
+        cpu.deserialize(this.executing);
+      }
+      return;
     }
 
     // executing union ready

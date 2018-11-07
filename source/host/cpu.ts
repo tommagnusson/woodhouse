@@ -51,7 +51,7 @@ namespace TSOS {
 
     public lastInstruction: OpCode;
 
-    private deserialize(process: ProcessControlBlock): void {
+    public deserialize(process: ProcessControlBlock): void {
       this.PC = process.programCounter;
       this.Acc = process.accumulator;
       this.Xreg = process.xReg;
@@ -60,17 +60,12 @@ namespace TSOS {
     }
 
     // verbose to include parameter destructuring with type info but oh well...
-    public cycle({
-      executing,
-      shouldDeserializePCB
-    }: {
-      executing: ProcessControlBlock;
-      shouldDeserializePCB: boolean;
-    }): void {
-      _Kernel.krnTrace('CPU cycle');
-      if (shouldDeserializePCB) {
+    public cycle(executing: ProcessControlBlock): void {
+      if (executing.fresh) {
         this.deserialize(executing);
+        executing.fresh = false;
       }
+      _Kernel.krnTrace('CPU cycle');
 
       // needs to be a function because lookahead modifies the PC
       const location = () => this.PC.toString(16);
@@ -171,7 +166,7 @@ namespace TSOS {
 
         case '00': // BRK
           _KernelInterruptQueue.enqueue(
-            new Interrupt(IRQ.BREAK_PROGRAM_IRQ, [])
+            new Interrupt(IRQ.BREAK_PROGRAM_IRQ, [_Scheduler.executing.pid])
           );
           this.reset();
           return true;
@@ -224,7 +219,7 @@ namespace TSOS {
         default:
           _StdOut.putSysTextLn(`Found invalid opcode ${opCode.code}.`);
           _KernelInterruptQueue.enqueue(
-            new Interrupt(IRQ.BREAK_PROGRAM_IRQ, [])
+            new Interrupt(IRQ.BREAK_PROGRAM_IRQ, [_Scheduler.executing.pid])
           );
           this.reset();
           return true;

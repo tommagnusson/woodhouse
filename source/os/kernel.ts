@@ -92,7 +92,15 @@ namespace TSOS {
         (!_SingleStepIsEnabled || (_SingleStepIsEnabled && _ShouldStep))
       ) {
         // look at scheduler to see which process we run
-        _CPU.cycle(_Scheduler.next());
+        const nextProcess = _Scheduler.next();
+        _CPU.cycle(nextProcess);
+        _Scheduler.scheduleType.didCycle(nextProcess.pid);
+        _Scheduler.updateStats();
+        if (_Scheduler.scheduleType.shouldContextSwitch()) {
+          _KernelInterruptQueue.enqueue(
+            new Interrupt(IRQ.CONTEXT_SWITCH_IRQ, [])
+          );
+        }
         _ShouldStep = false;
       } else {
         this.krnTrace('Idle');
@@ -141,7 +149,7 @@ namespace TSOS {
           this.onRunProgram(params[0]);
         },
         [IRQ.BREAK_PROGRAM_IRQ]: () => {
-          this.onBreakProgram();
+          this.onBreakProgram(params[0]);
         },
         [IRQ.ERR_PROGRAM_IRQ]: () => {
           this.onErrProgram(params[0]);
@@ -151,6 +159,12 @@ namespace TSOS {
         },
         [IRQ.RUN_ALL_PROGRAMS_IRQ]: () => {
           this.onRunAllPrograms();
+        },
+        [IRQ.KILL_PROGRAM]: () => {
+          this.onKillProgram(params[0]);
+        },
+        [IRQ.CONTEXT_SWITCH_IRQ]: () => {
+          this.onContextSwitch();
         }
       };
 
@@ -163,6 +177,14 @@ namespace TSOS {
         );
       }
     }
+    private onContextSwitch(): void {
+      _Scheduler.contextSwitch(_CPU);
+      _Scheduler.scheduleType.didContextSwitch();
+    }
+
+    private onKillProgram(pid): void {
+      this.stopRunningProgram(`Oh dear, I... I just murdered pid ${pid}!`, pid);
+    }
 
     private onRunAllPrograms() {
       const allPcbs = Array.from(_Scheduler.residentMap.values());
@@ -174,32 +196,37 @@ namespace TSOS {
       _StdOut.putSysTextLn('Cleared memory.');
     }
 
-    private stopRunningProgram(makeMessage) {
+    private stopRunningProgram(message, pid) {
+      const programToBeStopped = _Scheduler
+        .getActiveProcesses()
+        .find(p => p.pid === parseInt(pid));
+
+      const waitTime = programToBeStopped.getWaitTime();
+      const turnaroundTime = programToBeStopped.getTurnaroundTime();
       // reclaim memory
-      _MemoryGuardian.evacuate(_Scheduler.executing);
-      const terminatedPid = _Scheduler.executing.pid;
-      const message = makeMessage(terminatedPid);
+      _MemoryGuardian.evacuate(programToBeStopped);
       // stop execution
-      if (_Scheduler.requestGracefulTermination()) {
+      if (_Scheduler.requestGracefulTermination(pid)) {
         _StdOut.putText(message);
+        _StdOut.putText(`Wait time: ${waitTime}`);
+        _StdOut.putText(`Turnaround time: ${turnaroundTime}`);
       } else {
-        _StdOut.putText(
-          `Process ${terminatedPid} could not be gracefully terminated.`
-        );
+        _StdOut.putText(`Process ${pid} could not be gracefully terminated.`);
       }
+      _KernelInterruptQueue.enqueue(new Interrupt(IRQ.CONTEXT_SWITCH_IRQ, []));
+
       Control.renderStats(_CPU);
     }
 
-    private onErrProgram(errMessage) {
+    private onErrProgram(pid) {
       this.stopRunningProgram(
-        pid => `Process ${pid} exited with status code -1.`
+        `Process ${pid} exited with status code -1.`,
+        pid
       );
     }
 
-    private onBreakProgram() {
-      this.stopRunningProgram(
-        pid => `Process ${pid} exited with status code 0.`
-      );
+    private onBreakProgram(pid) {
+      this.stopRunningProgram(`Process ${pid} exited with status code 0.`, pid);
     }
 
     private onLoadProgram(program: string) {
