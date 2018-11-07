@@ -29,6 +29,8 @@ enum IRQ {
   KILL_PROGRAM
 }
 
+const KEYBOARD_IRQ = IRQ.KEYBOARD_IRQ.valueOf();
+
 enum ScheduleType {
   RoundRobin
 }
