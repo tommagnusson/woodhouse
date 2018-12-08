@@ -2,6 +2,7 @@
 ///<reference path="../utils.ts" />
 ///<reference path="shellCommand.ts" />
 ///<reference path="userCommand.ts" />
+///<reference path="fileSystemDeviceDriver.ts" />
 
 /* ------------
    Shell.ts
@@ -201,6 +202,14 @@ namespace TSOS {
           this.shellSetQuantum,
           'quantum',
           '<int> - set the round robin quantum in clock cycles'
+        )
+      );
+
+      this.commandList.push(
+        new ShellCommand(
+          this.shellFormat,
+          'format',
+          '- formats the disk (WARNING, DESTROYS DATA)'
         )
       );
 
@@ -586,6 +595,14 @@ namespace TSOS {
       }
       RoundRobinSchedule.quantum = newQuantum;
       _StdOut.putText(`Quantum set to ${RoundRobinSchedule.quantum}`);
+    };
+
+    public shellFormat = args => {
+      // interrupts within interrupts my dude
+      _KernelInterruptQueue.enqueue(
+        new Interrupt(IRQ.FILE_SYSTEM_IRQ, [FileSystemInterrupts.FORMAT, []])
+      );
+      _StdOut.putText(`Formatting disk...`);
     };
   }
 }

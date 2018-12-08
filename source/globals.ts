@@ -26,7 +26,8 @@ enum IRQ {
   REQ_CLEAR_MEM_IRQ,
   CONTEXT_SWITCH_IRQ,
   RUN_ALL_PROGRAMS_IRQ,
-  KILL_PROGRAM
+  KILL_PROGRAM,
+  FILE_SYSTEM_IRQ
 }
 
 const KEYBOARD_IRQ = IRQ.KEYBOARD_IRQ.valueOf();
@@ -75,8 +76,10 @@ var _SarcasticMode: boolean = false;
 var _SingleStepIsEnabled: boolean = false;
 var _ShouldStep: boolean = false;
 
-// Global Device Driver Objects - page 12
-var _krnKeyboardDriver; //  = null;
+var _krnKeyboardDriver: TSOS.DeviceDriver;
+let _Disk: TSOS.Disk;
+let _krnFileSystemDriver: TSOS.DeviceDriver; // just going with the global pattern for now
+// let it be known I hate it though...
 
 var _hardwareClockID: number = null;
 

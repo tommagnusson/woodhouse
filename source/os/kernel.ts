@@ -44,6 +44,10 @@ namespace TSOS {
       _krnKeyboardDriver.driverEntry(); // Call the driverEntry() initialization routine.
       this.krnTrace(_krnKeyboardDriver.status);
 
+      _krnFileSystemDriver = new FileSystemDeviceDriver(_Disk);
+      _krnFileSystemDriver.driverEntry();
+      this.krnTrace(_krnFileSystemDriver.status);
+
       //
       // ... more?
       //
@@ -141,6 +145,9 @@ namespace TSOS {
         [IRQ.KEYBOARD_IRQ]: () => {
           _krnKeyboardDriver.isr(params); // Kernel mode device driver
           _StdIn.handleInput();
+        },
+        [IRQ.FILE_SYSTEM_IRQ]: () => {
+          _krnFileSystemDriver.isr(params); // forwards file system irqs
         },
         [IRQ.LOAD_PROGRAM_IRQ]: () => {
           this.onLoadProgram(params[0]);

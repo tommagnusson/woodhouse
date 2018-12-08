@@ -13,28 +13,21 @@ namespace TSOS {
   // Extends DeviceDriver
   export class DeviceDriverKeyboard extends DeviceDriver {
     constructor() {
-      // Override the base method pointers.
-
-      // The code below cannot run because "this" can only be
-      // accessed after calling super.
-      //super(this.krnKbdDriverEntry, this.krnKbdDispatchKeyPress);
       super();
-      this.driverEntry = this.krnKbdDriverEntry;
-      this.isr = this.krnKbdDispatchKeyPress;
     }
 
-    public krnKbdDriverEntry() {
+    public driverEntry(): void {
       // Initialization routine for this, the kernel-mode Keyboard Device Driver.
-      this.status = "loaded";
+      this.status = 'loaded';
       // More?
     }
 
-    public krnKbdDispatchKeyPress(params) {
+    public isr(params) {
       // Parse the params.    TODO: Check that the params are valid and osTrapError if not.
       const keyCode = params[0];
       const isShifted = params[1];
-      _Kernel.krnTrace("Key code:" + keyCode + " shifted:" + isShifted);
-      let chr = "";
+      _Kernel.krnTrace('Key code:' + keyCode + ' shifted:' + isShifted);
+      let chr = '';
 
       // The javascript || will return the first nonnull/nonundefined value...
       // This is the type of short circuit behavior is fast
@@ -51,12 +44,12 @@ namespace TSOS {
 
     private determineSpecial(keyCode, isShifted) {
       const specialCodeToChar = {
-        8: "\b",
-        9: "\t",
+        8: '\b',
+        9: '\t',
         13: String.fromCharCode(13),
-        32: " ",
-        38: "↑",
-        40: "↓"
+        32: ' ',
+        38: '↑',
+        40: '↓'
       };
       return specialCodeToChar[keyCode];
     }
@@ -64,42 +57,42 @@ namespace TSOS {
     private determineSymbol(keyCode, isShifted) {
       if (!isShifted) {
         const unshiftedCodeToChar = {
-          192: "`",
-          186: ";",
-          187: "=",
-          188: ",",
-          189: "-",
-          190: ".",
-          191: "/",
-          219: "[",
-          220: "\\",
-          221: "]",
+          192: '`',
+          186: ';',
+          187: '=',
+          188: ',',
+          189: '-',
+          190: '.',
+          191: '/',
+          219: '[',
+          220: '\\',
+          221: ']',
           222: "'"
         };
         return unshiftedCodeToChar[keyCode];
       }
       const shiftedCodeToChar = {
-        48: ")",
-        49: "!",
-        50: "@",
-        51: "#",
-        52: "$",
-        53: "%",
-        54: "^",
-        55: "&",
-        56: "*",
-        57: "(",
-        189: "_",
-        187: "+",
-        219: "{",
-        221: "}",
-        220: "|",
-        186: ":",
+        48: ')',
+        49: '!',
+        50: '@',
+        51: '#',
+        52: '$',
+        53: '%',
+        54: '^',
+        55: '&',
+        56: '*',
+        57: '(',
+        189: '_',
+        187: '+',
+        219: '{',
+        221: '}',
+        220: '|',
+        186: ':',
         222: '"',
-        188: "<",
-        190: ">",
-        191: "?",
-        192: "~"
+        188: '<',
+        190: '>',
+        191: '?',
+        192: '~'
       };
 
       // vector sort of implementation of this

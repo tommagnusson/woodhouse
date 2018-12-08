@@ -1,21 +1,25 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <meta name="author" content="Thomas Magnusson" />
 
     <!-- Bootstrap styling -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
-        crossorigin="anonymous">
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+      integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO"
+      crossorigin="anonymous"
+    />
     <link rel="stylesheet" href="app.css" type="text/css" media="screen" />
-    <title>
-        Woodhouse - a subservient operating system
-    </title>
+    <title>Woodhouse - a subservient operating system</title>
 
     <!-- Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-        crossorigin="anonymous"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"
+    ></script>
 
     <!-- Lodash, complex array operations -->
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.11/lodash.min.js"></script>
@@ -25,18 +29,32 @@
 
     <!-- Host (Virtual Machine / Hardware Simulation) Routines -->
     <script type="text/javascript" src="distrib/host/control.js"></script>
+    <script type="text/javascript" src="distrib/host/disk.js"></script>
+
     <script type="text/javascript" src="distrib/host/devices.js"></script>
     <script type="text/javascript" src="distrib/host/cpu.js"></script>
     <script type="text/javascript" src="distrib/host/memory.js"></script>
     <script type="text/javascript" src="distrib/host/opcode.js"></script>
 
-    <!-- Virtual OS Routines: Make sure Kernel code is last, since it needs those above it. -->
+    <!--
+      Virtual OS Routines: Make sure Kernel code is last, since it needs those above it.
+    -->
     <script type="text/javascript" src="distrib/os/interrupt.js"></script>
-    <script type="text/javascript" src="distrib/os/roundRobinSchedule.js"></script>
+    <script
+      type="text/javascript"
+      src="distrib/os/roundRobinSchedule.js"
+    ></script>
     <script type="text/javascript" src="distrib/os/canvastext.js"></script>
     <script type="text/javascript" src="distrib/os/console.js"></script>
     <script type="text/javascript" src="distrib/os/deviceDriver.js"></script>
-    <script type="text/javascript" src="distrib/os/deviceDriverKeyboard.js"></script>
+    <script
+      type="text/javascript"
+      src="distrib/os/deviceDriverKeyboard.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="distrib/os/fileSystemDeviceDriver.js"
+    ></script>
     <script type="text/javascript" src="distrib/os/queue.js"></script>
     <script type="text/javascript" src="distrib/os/shell.js"></script>
     <script type="text/javascript" src="distrib/os/shellCommand.js"></script>
@@ -44,137 +62,185 @@
     <script type="text/javascript" src="distrib/os/memoryGuardian.js"></script>
     <script type="text/javascript" src="distrib/os/segment.js"></script>
     <script type="text/javascript" src="distrib/os/scheduler.js"></script>
-    <script type="text/javascript" src="distrib/os/processControlBlock.js"></script>
+    <script
+      type="text/javascript"
+      src="distrib/os/processControlBlock.js"
+    ></script>
     <script type="text/javascript" src="distrib/os/kernel.js"></script>
 
     <!-- Other Routines -->
     <script type="text/javascript" src="distrib/utils.js"></script>
     <!-- Uncomment the line below to enable GLaDOS testing. -->
-    <script type="text/javascript" src="http://alanclasses.github.io/TSOS/test/glados-ip3.js"></script>
+    <!--
+      <script type="text/javascript" src="http://alanclasses.github.io/TSOS/test/glados-ip3.js"></script>
+    -->
+  </head>
 
-</head>
-
-<body onload="onDocumentLoad()" class="bg-dark">
+  <body onload="onDocumentLoad()" class="bg-dark">
     <nav class="navbar sticky-top navbar-light bg-light">
-        <div id="buttons">
-            <button type="button" id="btnStartOS" name="brnStartOS" class="btn btn-primary" tabindex="0" onclick="TSOS.Control.hostBtnStartOS_click(this);">Start</button>
-            <button type="button" id="btnHaltOS" name="brnHaltOS" class="btn btn-danger" disabled="disabled" tabindex="1"
-                onclick="TSOS.Control.hostBtnHaltOS_click(this);">
-                Halt</button>
-            <button type="button" id="btnReset" name="brnReset" class="btn btn-secondary" disabled="disabled" tabindex="3"
-                onclick="TSOS.Control.hostBtnReset_click(this);">Reset</button>
-        </div>
+      <div id="buttons">
+        <button
+          type="button"
+          id="btnStartOS"
+          name="brnStartOS"
+          class="btn btn-primary"
+          tabindex="0"
+          onclick="TSOS.Control.hostBtnStartOS_click(this);"
+        >
+          Start
+        </button>
+        <button
+          type="button"
+          id="btnHaltOS"
+          name="brnHaltOS"
+          class="btn btn-danger"
+          disabled="disabled"
+          tabindex="1"
+          onclick="TSOS.Control.hostBtnHaltOS_click(this);"
+        >
+          Halt
+        </button>
+        <button
+          type="button"
+          id="btnReset"
+          name="brnReset"
+          class="btn btn-secondary"
+          disabled="disabled"
+          tabindex="3"
+          onclick="TSOS.Control.hostBtnReset_click(this);"
+        >
+          Reset
+        </button>
+      </div>
 
-        <div id="singleStep" style="display:flex">
-            <button data-state="off" type="button" id="btnStepToggle" class="btn btn-outline-info" onclick="TSOS.Control.onToggleStep(this)">Toggle
-                Step</button>
-            <button type="button" id="btnStepOS" class="btn btn-outline-dark" disabled style="margin-left:20px" onclick="TSOS.Control.onStep(this)">Step</button>
-        </div>
+      <div id="singleStep" style="display:flex">
+        <button
+          data-state="off"
+          type="button"
+          id="btnStepToggle"
+          class="btn btn-outline-info"
+          onclick="TSOS.Control.onToggleStep(this)"
+        >
+          Toggle Step
+        </button>
+        <button
+          type="button"
+          id="btnStepOS"
+          class="btn btn-outline-dark"
+          disabled
+          style="margin-left:20px"
+          onclick="TSOS.Control.onStep(this)"
+        >
+          Step
+        </button>
+      </div>
 
-
-
-        <p class="text-muted" style="margin-bottom:0" class="text-overflow"><strong>Status:</strong> <span id="status"></span></p>
-        <p class="text-muted" style="margin-bottom:0; float:right"><code id="date" class="monospace">--/--/---- -:--:-- --</code></p>
-
-
+      <p class="text-muted" style="margin-bottom:0" class="text-overflow">
+        <strong>Status:</strong> <span id="status"></span>
+      </p>
+      <p class="text-muted" style="margin-bottom:0; float:right">
+        <code id="date" class="monospace">--/--/---- -:--:-- --</code>
+      </p>
     </nav>
     <div id="divMain" style="width:100%;">
-        <div class="left">
-
-            <label class="text-light">Console</label>
-            <div id="divConsole" class="bg-light" style="width:500px; height:500px;">
-                <canvas id="display" width="500px" height="500px" tabindex="3">
-                </canvas>
-            </div>
+      <div class="left">
+        <label class="text-light">Console</label>
+        <div
+          id="divConsole"
+          class="bg-light"
+          style="width:500px; height:500px;"
+        >
+          <canvas id="display" width="500px" height="500px" tabindex="3">
+          </canvas>
         </div>
-        <div class="center">
+      </div>
+      <div class="center">
+        <div id="divLog" style="display:flex; flex-direction: column; ">
+          <label class="text-light"> Host Log </label>
 
-            <div id="divLog" style="display:flex; flex-direction: column; ">
-                <label class="text-light">
-                    Host Log
-                </label>
+          <textarea
+            name="taHostLog"
+            id="taHostLog"
+            rows="4"
+            cols="48"
+          ></textarea>
+        </div>
 
-                <textarea name="taHostLog" id="taHostLog" rows="4" cols="48"></textarea>
-
-            </div>
-
-            <div id="divUserProgramInput" style="margin-top: 20px">
-                <label class="text-light">
-                    User Program Input
-                </label>
-                <textarea name="taProgramInput" id="taProgramInput" rows="8" cols="48">A9 00 8D 7B 00 A9 00 8D 7B 00 A9 00 8D 7C 00 A9 00 8D 7C 00 A9 01 8D 7A 00 A2 00 EC 7A 00 D0 39 A0 7D A2 02 FF AC 7B 00
+        <div id="divUserProgramInput" style="margin-top: 20px">
+          <label class="text-light"> User Program Input </label>
+          <textarea
+            name="taProgramInput"
+            id="taProgramInput"
+            rows="8"
+            cols="48"
+          >
+A9 00 8D 7B 00 A9 00 8D 7B 00 A9 00 8D 7C 00 A9 00 8D 7C 00 A9 01 8D 7A 00 A2 00 EC 7A 00 D0 39 A0 7D A2 02 FF AC 7B 00
                 A2 01 FF AD 7B 00 8D 7A 00 A9 01 6D 7A 00 8D 7B 00 A9 03 AE 7B 00 8D 7A 00 A9 00 EC 7A 00 D0 02 A9 01 8D 7A 00 A2 01 EC
                 7A 00 D0 05 A9 01 8D 7C 00 A9 00 AE 7C 00 8D 7A 00 A9 00 EC 7A 00 D0 02 A9 01 8D 7A 00 A2 00 EC 7A 00 D0 AC A0 7F A2 02
-                FF 00 00 00 00 61 00 61 64 6F 6E 65 00</textarea>
-
-            </div>
-
+                FF 00 00 00 00 61 00 61 64 6F 6E 65 00</textarea
+          >
         </div>
-        <div class="right">
-            <label class="text-light">Memory</label>
-            <div class="memory">
-                <table class="table table-dark">
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="cpu-group">
-                <label class="text-light">CPU</label>
-                <div class="cpu">
-                    <table class="table table-light text-dark text-center">
-                        <thead>
-                            <th>Counter</th>
-                            <th>Instruction</th>
-                            <th>Accumulator</th>
-                            <th>X</th>
-                            <th>Y</th>
-                            <th>Z</th>
-                        </thead>
-                        <tbody>
-                            <tr scope="row">
-                                <td id="cpuCounter">
-                                </td>
-                                <td id="cpuInstruction">
-                                </td>
-                                <td id="cpuAccumulator">
-                                </td>
-                                <td id="cpuX">
-                                </td>
-                                <td id="cpuY">
-                                </td>
-                                <td id="cpuZ">
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+      </div>
+      <div class="right">
+        <label class="text-light">Memory</label>
+        <div class="memory">
+          <table class="table table-dark">
+            <tbody></tbody>
+          </table>
         </div>
-        <div class="pcb-group" style="grid-column: 2">
-            <label class="text-light">Process Control Blocks</label>
-            <div class="pcb">
-                <table class="table table-light text-dark text-center">
-                    <thead>
-                        <th>PID</th>
-                        <th>State</th>
-                        <th>Base</th>
-                        <th>Limit</th>
-                        <th>Counter</th>
-                        <th>Instruction</th>
-                        <th>Accumulator</th>
-                        <th>X</th>
-                        <th>Y</th>
-                        <th>Z</th>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
 
+        <div class="cpu-group">
+          <label class="text-light">CPU</label>
+          <div class="cpu">
+            <table class="table table-light text-dark text-center">
+              <thead>
+                <th>Counter</th>
+                <th>Instruction</th>
+                <th>Accumulator</th>
+                <th>X</th>
+                <th>Y</th>
+                <th>Z</th>
+              </thead>
+              <tbody>
+                <tr scope="row">
+                  <td id="cpuCounter"></td>
+                  <td id="cpuInstruction"></td>
+                  <td id="cpuAccumulator"></td>
+                  <td id="cpuX"></td>
+                  <td id="cpuY"></td>
+                  <td id="cpuZ"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+        <label class="text-light">Disk</label>
+        <div class="disk">
+          <table class="table table-dark">
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="pcb-group" style="grid-column: 2">
+        <label class="text-light">Process Control Blocks</label>
+        <div class="pcb">
+          <table class="table table-light text-dark text-center">
+            <thead>
+              <th>PID</th>
+              <th>State</th>
+              <th>Base</th>
+              <th>Limit</th>
+              <th>Counter</th>
+              <th>Instruction</th>
+              <th>Accumulator</th>
+              <th>X</th>
+              <th>Y</th>
+              <th>Z</th>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
     </div>
-
-</body>
-
+  </body>
 </html>
