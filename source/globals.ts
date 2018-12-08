@@ -78,7 +78,7 @@ var _ShouldStep: boolean = false;
 
 var _krnKeyboardDriver: TSOS.DeviceDriver;
 let _Disk: TSOS.Disk;
-let _krnFileSystemDriver: TSOS.DeviceDriver; // just going with the global pattern for now
+let _krnFileSystemDriver: TSOS.FileSystemDeviceDriver; // just going with the global pattern for now
 // let it be known I hate it though...
 
 var _hardwareClockID: number = null;

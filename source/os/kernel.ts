@@ -48,10 +48,6 @@ namespace TSOS {
       _krnFileSystemDriver.driverEntry();
       this.krnTrace(_krnFileSystemDriver.status);
 
-      //
-      // ... more?
-      //
-
       // Enable the OS Interrupts.  (Not the CPU clock interrupt, as that is done in the hardware sim.)
       this.krnTrace('Enabling the interrupts.');
       this.krnEnableInterrupts();

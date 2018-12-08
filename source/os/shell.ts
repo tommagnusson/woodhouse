@@ -604,5 +604,16 @@ namespace TSOS {
       );
       _StdOut.putText(`Formatting disk...`);
     };
+    public shellCreate = args => {
+      const [fileName, ...ignored] = args;
+      // doesn't start with .
+      if (fileName.startsWith(`.`)) {
+        // user trying to create a swap file, ignore
+        _StdOut.putText(
+          `Terribly sorry, I'm afraid I cannot let you create a file that starts with a dot: ${fileName}`
+        );
+        return;
+      }
+    };
   }
 }

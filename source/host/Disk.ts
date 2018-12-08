@@ -36,13 +36,13 @@ namespace TSOS {
       readonly block: number
     ) {}
 
-    public toByteString() {
+    public toByteString(): string {
       return [this.track, this.sector, this.block]
         .map(i => i.toString())
         .join('');
     }
 
-    public toString() {
+    public toString(): string {
       return (
         '(' +
         [this.track, this.sector, this.block].map(i => i.toString()).join(',') +
