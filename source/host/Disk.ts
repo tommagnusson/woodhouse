@@ -18,6 +18,15 @@ namespace TSOS {
         );
       }
     }
+    public allLocationsAndContents(): { location: string; contents: string }[] {
+      const locations = Object.keys(sessionStorage);
+
+      // return (location, contents of that location)
+      return locations.map(l => ({
+        location: l,
+        contents: sessionStorage.getItem(l)
+      }));
+    }
   }
 
   export class DiskLocation {

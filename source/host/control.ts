@@ -349,5 +349,28 @@ namespace TSOS {
         memoryTable.appendChild(byteRow);
       }
     }
+
+    /*
+    <tr>
+                <th scope="row">(0,0,0)</th>
+                <td id="location(0,0,0)">000000000000000000000000000000</td>
+              </tr>
+    */
+    public static displayDisk(disk: Disk) {
+      const all = disk.allLocationsAndContents();
+      const $diskTable = document.querySelector(`.disk table tbody`);
+      all.forEach(lc => {
+        const $tr = document.createElement(`tr`);
+        const $th = document.createElement(`th`);
+        $th.setAttribute(`scope`, `row`);
+        $th.textContent = lc.location;
+        const $td = document.createElement(`td`);
+        $td.setAttribute(`id`, `location${lc.location}`);
+        $td.textContent = lc.contents;
+        $tr.appendChild($th);
+        $tr.appendChild($td);
+        $diskTable.appendChild($tr);
+      });
+    }
   }
 }
