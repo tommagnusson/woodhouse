@@ -125,12 +125,11 @@ namespace TSOS {
 
       // .. set focus on the OS console display ...
       document.getElementById('display').focus();
-
+      _Disk = new Disk();
       // ... Create and initialize the CPU (because it's part of the hardware)  ...
       _Memory = new Memory();
       _CPU = new Cpu(); // Note: We could simulate multi-core systems by instantiating more than one instance of the CPU here.
       _CPU.init(); //       There's more to do, like dealing with scheduling and such, but this would be a start. Pretty cool.
-      _Disk = new Disk();
 
       // ... then set the host clock pulse ...
       _hardwareClockID = setInterval(
@@ -187,6 +186,7 @@ namespace TSOS {
       const code = opCode ? opCode.code : '--';
       Control.displayCPU(cpu.PC, code, cpu.Acc, cpu.Xreg, cpu.Yreg, cpu.Zflag);
       Control.displayAllPCBs(_Scheduler);
+      Control.displayDisk(_Disk);
     }
 
     public static displayCPU(counter, instruction, accumulator, x, y, z) {
@@ -359,6 +359,9 @@ namespace TSOS {
     public static displayDisk(disk: Disk) {
       const all = disk.allLocationsAndContents();
       const $diskTable = document.querySelector(`.disk table tbody`);
+      while ($diskTable.firstChild) {
+        $diskTable.removeChild($diskTable.firstChild);
+      }
       all.forEach(lc => {
         const $tr = document.createElement(`tr`);
         const $th = document.createElement(`th`);

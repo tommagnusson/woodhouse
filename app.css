@@ -46,7 +46,7 @@ nav > *:not(:first-child) {
 }
 
 #taProgramInput {
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
 }
 
 .left {
@@ -78,7 +78,8 @@ nav > *:not(:first-child) {
   }
 }
 
-.memory {
+.memory,
+.disk {
   height: 240px;
   overflow-y: scroll;
   padding: 2px;
