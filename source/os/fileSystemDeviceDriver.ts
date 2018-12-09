@@ -4,8 +4,12 @@
 
 namespace TSOS {
   // A block terminates a linked list of pointers if it points to itself
+  // The first track is reserved for file names
+  // (0,0,0) is the master boot record
   export class FileSystemDeviceDriver extends DeviceDriver {
     private isFormatted: boolean = false;
+
+    private files: FileSystemBlock[] = [];
 
     private checkFormatted(): boolean {
       if (!this.isFormatted) {
@@ -16,7 +20,6 @@ namespace TSOS {
       return this.isFormatted;
     }
 
-    // (0,0,0) is the master boot record
     constructor(
       readonly disk: Disk,
       readonly numTracks: number = 3,
@@ -43,6 +46,12 @@ namespace TSOS {
         },
         [FileSystemInterrupts.CREATE]: () => {
           this.onCreate(fsParams);
+        },
+        [FileSystemInterrupts.WRITE]: () => {
+          this.onWrite(fsParams);
+        },
+        [FileSystemInterrupts.READ]: () => {
+          this.onRead(fsParams);
         }
       };
       const maybeFn = fsInterrupts[fsIRQ];
@@ -66,11 +75,109 @@ namespace TSOS {
       }
       _StdOut.putText(`Creating file ${params[0]}...`);
       this.createFile(params[0]);
-      _StdOut.putText(`Created file ${params[0]}.`);
+    }
+
+    private onWrite(params: any[]) {
+      if (!this.checkFormatted()) {
+        return;
+      }
+      const [fileName, stringData] = params;
+      this.appendToFile(fileName, stringData);
+    }
+
+    private onRead(params: any[]) {
+      if (!this.checkFormatted()) {
+        return;
+      }
+      const [filename] = params;
+      _StdOut.putText(`Contents of ${filename}: `);
+      _StdOut.putText(this.readFile(filename));
+    }
+
+    private readFile(fileName: string): string {
+      const theFile = this.findFile(fileName);
+      if (theFile.isFileTerminus()) {
+        return '';
+      }
+      return this.recursiveRead(theFile.getBlockFromPointer());
+    }
+
+    private recursiveRead(block: FileSystemBlock): string {
+      // base case: terminus, return the content
+      if (block.isFileTerminus()) {
+        return block.getStringContent();
+      }
+      // recursive case: get the content and concat with next block
+      return block
+        .getStringContent()
+        .concat(this.recursiveRead(block.getBlockFromPointer()));
+    }
+
+    private findFile(fileName: string): FileSystemBlock {
+      return this.fileNameBlocks()
+        .filter(b => b.getState() === BlockState.OCCUPIED)
+        .find(b => b.getStringContent() === fileName);
+    }
+
+    private appendToFile(fileName: string, stringData: string) {
+      // find the file
+      const theFile = this.findFile(fileName);
+
+      if (theFile.isFileNameBlock() && theFile.isFileTerminus()) {
+        // uh oh, find a free block to expand my dawg...
+        const available = this.availableLocations.shift();
+        if (!available) {
+          throw new Error(`No available space on disk.`);
+        }
+
+        available.reset();
+        theFile.setPointer(available.location);
+        // save the file
+        this.writeRaw(theFile);
+        this.appendToBlock(available, stringData);
+      }
+      const firstContentfulBlock = FileSystemBlock.loadFromLocation(
+        theFile.getPointer()
+      );
+
+      this.appendToBlock(firstContentfulBlock, stringData);
+    }
+
+    private appendToBlock(block: FileSystemBlock, stringData: string) {
+      const remainingStringData = block.appendStringContent(stringData);
+
+      // base case, wrote everything sucessfully
+      if (remainingStringData === '') {
+        this.writeRaw(block);
+        return block;
+      }
+      // recursive case, find more disk space...
+      const available = this.availableLocations.shift();
+      if (!available) {
+        throw new Error('No available space on disk.');
+      }
+      // link up the previous block to the next available one
+      block.setPointer(available.location);
+      available.reset();
+      available.setState(BlockState.OCCUPIED);
+      // save current block to disk
+      this.writeRaw(block);
+
+      return this.appendToBlock(available, remainingStringData);
     }
 
     private createFile(filename: string) {
-      const available = this.availableLocations.shift();
+      // check existing files
+      const names = this.fileNameBlocks()
+        .filter(b => b.getState() === BlockState.OCCUPIED)
+        .map(b => b.getStringContent());
+      if (names.some(name => name === filename)) {
+        _StdOut.putText(`File with name ${filename} already exists.`);
+        return;
+      }
+      const available = this.fileNameBlocks()
+        .filter(b => b.getState() === BlockState.AVAILABLE)
+        .shift();
       if (!available.reset()) {
         throw new Error(
           `Tried to reset the contents of an "available" block: ${available}`
@@ -79,26 +186,37 @@ namespace TSOS {
       available.setState(BlockState.OCCUPIED);
       available.setStringContent(filename);
       this.writeRaw(available);
+      this.files.push(available);
+      _StdOut.putText(`Created file ${filename}.`);
     }
 
     driverEntry() {
       this.status = 'initialized';
       this.findAvailableBlocks();
+      this.isFormatted = this.disk.allLocationsAndContents().length !== 0;
+    }
+
+    private fileNameBlocks(): FileSystemBlock[] {
+      return this.disk
+        .allLocationsAndContents()
+        .map(kv => FileSystemBlock.deserialize(kv.location, kv.contents))
+        .filter(b => b.location.track === 0)
+        .filter(b => !b.location.equals(new DiskLocation(0, 0, 0))); // ignore boot block
     }
 
     private findAvailableBlocks(): FileSystemBlock[] {
       this.availableLocations = this.disk
         .allLocationsAndContents()
         .map(kv => FileSystemBlock.deserialize(kv.location, kv.contents))
-        .filter(b => b.getState() === BlockState.AVAILABLE)
-        .filter(b => !b.location.equals(new DiskLocation(0, 0, 0))); // ignore boot block
+        .filter(
+          b => b.getState() === BlockState.AVAILABLE && b.location.track !== 0
+        );
       return this.availableLocations;
     }
 
     private availableLocations: FileSystemBlock[];
 
     format() {
-      // todo mark empty locations
       _.range(this.numTracks).forEach(t =>
         _.range(this.numSectors).forEach(s =>
           _.range(this.numBlocks).forEach(b => {
@@ -112,6 +230,13 @@ namespace TSOS {
     writeRaw(block: FileSystemBlock): void {
       this.disk.write(block.location, block.serialize());
     }
+
+    public ls(): string[] {
+      return this.fileNameBlocks()
+        .filter(b => b.getState() === BlockState.OCCUPIED)
+        .map(b => b.getStringContent())
+        .filter(n => !n.startsWith('.'));
+    }
   }
 
   // === BEGIN FILE SYSTEM BLOCK ===
@@ -123,6 +248,16 @@ namespace TSOS {
     private byteContents: string;
 
     static DEFAULT_CONTENTS = '0'.repeat(60);
+
+    static loadFromLocation(location: DiskLocation): FileSystemBlock {
+      const found = _Disk
+        .allLocationsAndContents()
+        .find(lc => lc.location === location.toByteString());
+      if (!found) {
+        return null;
+      }
+      return FileSystemBlock.deserialize(found.location, found.contents);
+    }
 
     constructor(
       readonly location: DiskLocation,
@@ -146,6 +281,10 @@ namespace TSOS {
       this.pointer = pointer || this.location;
     }
 
+    public isFileNameBlock() {
+      return this.location.track === 0;
+    }
+
     private pad(byteContents: string): string {
       if (byteContents.length > 60) {
         throw new Error(
@@ -164,6 +303,18 @@ namespace TSOS {
       return this.state;
     }
 
+    public getBlockFromPointer(): FileSystemBlock {
+      return FileSystemBlock.loadFromLocation(this.getPointer());
+    }
+
+    public getPointer(): DiskLocation {
+      return this.pointer;
+    }
+
+    public setPointer(pointer: DiskLocation) {
+      this.pointer = pointer;
+    }
+
     public static stringToCharHex(s: string): string {
       return s
         .split('')
@@ -175,6 +326,42 @@ namespace TSOS {
       return _.chunk(charHex.split(''), 2)
         .map(([a, b]) => String.fromCharCode(parseInt(a.concat(b), 16)))
         .join('');
+    }
+
+    public getStringContent(): string {
+      return FileSystemBlock.charHexToString(this.byteContents).replace(
+        /\0*$/g,
+        ''
+      );
+    }
+
+    // find the char hex contents without padded 0s
+    public getCharHexContent(): string {
+      return this.byteContents.substring(
+        0,
+        _.chunk(this.byteContents, 2).findIndex(byte => byte === ['00'])
+      );
+    }
+
+    // if the content to be appended is longer than can fit,
+    // returns what's left of the string. If it can all fit, "" is returned.
+    public appendStringContent(stringContent: string): string {
+      const remainingRoom = 60 - this.getCharHexContent().length;
+      const appendCharHex = FileSystemBlock.stringToCharHex(stringContent);
+      if (remainingRoom <= appendCharHex.length) {
+        this.setHexByteContent(this.getCharHexContent().concat(appendCharHex));
+        return '';
+      } else {
+        // too big to fit :(
+        const charHexThatFits = appendCharHex.substring(0, remainingRoom);
+        this.setHexByteContent(
+          this.getCharHexContent().concat(charHexThatFits)
+        );
+        // return the rest
+        return FileSystemBlock.charHexToString(
+          appendCharHex.substring(remainingRoom, appendCharHex.length)
+        );
+      }
     }
 
     // replaces the content of the bytes
@@ -247,7 +434,9 @@ namespace TSOS {
 
   export enum FileSystemInterrupts {
     FORMAT,
-    CREATE
+    CREATE,
+    WRITE,
+    READ
   }
 
   export enum BlockState {

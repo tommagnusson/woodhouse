@@ -13,7 +13,6 @@
           serious injuries may occur when trying to write your own Operating System.
    ------------ */
 
-// TODO: Write a base class / prototype for system services and let Shell inherit from it.
 namespace TSOS {
   export class Shell {
     // Properties
@@ -218,6 +217,26 @@ namespace TSOS {
           this.shellCreate,
           'create',
           '"<filename>"- creates a new file with the given file name.'
+        )
+      );
+
+      this.commandList.push(
+        new ShellCommand(this.shellLS, 'ls', '- lists all files')
+      );
+
+      this.commandList.push(
+        new ShellCommand(
+          this.shellWrite,
+          'write',
+          '<file name> "<data>" - write data to a file (append)'
+        )
+      );
+
+      this.commandList.push(
+        new ShellCommand(
+          this.shellRead,
+          'read',
+          '<file name> - read data from a file.'
         )
       );
 
@@ -614,34 +633,77 @@ namespace TSOS {
     };
     public shellCreate = args => {
       const [fileName] = args;
-      if (
-        !fileName ||
-        fileName.length <= 2 ||
-        fileName.charAt(0) !== `"` ||
-        fileName.charAt(fileName.length - 1) !== `"`
-      ) {
-        _StdOut.putText(
-          `Please provide a file name in quotations, not: ${fileName}`
-        );
+
+      if (!fileName || fileName.length < 1) {
+        _StdOut.putText(`Please provide a file name.`);
         return;
       }
-      const unquotedFileName = fileName.substring(1, fileName.length - 1);
 
       // doesn't start with .
-      if (unquotedFileName.startsWith(`.`)) {
+      if (fileName.startsWith(`.`)) {
         // user trying to create a swap file, ignore
         _StdOut.putText(
-          `Terribly sorry, I'm afraid I cannot let you create a file that starts with a dot: ${unquotedFileName}`
+          `Terribly sorry, I'm afraid I cannot let you create a file that starts with a dot: ${fileName}`
         );
         return;
       }
-      console.log(
-        `attempting to create a file with filename: ${unquotedFileName}`
-      );
       _KernelInterruptQueue.enqueue(
         new Interrupt(IRQ.FILE_SYSTEM_IRQ, [
           FileSystemInterrupts.CREATE,
-          unquotedFileName
+          fileName
+        ])
+      );
+    };
+
+    public shellLS = args => {
+      // get all files that don't start with .
+      const files = _krnFileSystemDriver.ls();
+      if (files.length === 0) {
+        _StdOut.putText(`No files to show.`);
+      } else {
+        _StdOut.putText(files.join(', '));
+      }
+    };
+
+    public shellWrite = args => {
+      const [fileName, data] = args;
+      // check if file exists
+      if (!_krnFileSystemDriver.ls().some(f => f === fileName)) {
+        _StdOut.putText(
+          `Please provide a file that is already created. Use 'ls' to explore files.`
+        );
+        return;
+      }
+      // check if data's in quotes
+      if (
+        !data ||
+        data.length <= 2 ||
+        data.charAt(0) !== `"` ||
+        data.charAt(data.length - 1) !== `"`
+      ) {
+        _StdOut.putText(`Please provide some data in quotations, not: ${data}`);
+        return;
+      }
+      const unquotedData = data.substring(1, data.length - 1);
+      console.log('going to write', unquotedData, 'to', fileName);
+      _KernelInterruptQueue.enqueue(
+        new Interrupt(IRQ.FILE_SYSTEM_IRQ, [
+          FileSystemInterrupts.WRITE,
+          fileName,
+          unquotedData
+        ])
+      );
+    };
+
+    public shellRead = args => {
+      const [fileName] = args;
+      if (!_krnFileSystemDriver.ls().some(f => f === fileName)) {
+        _StdOut.putText(`Please enter a valid file, not: ${fileName}`);
+      }
+      _KernelInterruptQueue.enqueue(
+        new Interrupt(IRQ.FILE_SYSTEM_IRQ, [
+          FileSystemInterrupts.READ,
+          fileName
         ])
       );
     };
