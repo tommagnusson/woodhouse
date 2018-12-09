@@ -144,6 +144,7 @@ namespace TSOS {
         },
         [IRQ.FILE_SYSTEM_IRQ]: () => {
           _krnFileSystemDriver.isr(params); // forwards file system irqs
+          Control.displayDisk(_Disk);
         },
         [IRQ.LOAD_PROGRAM_IRQ]: () => {
           this.onLoadProgram(params[0]);

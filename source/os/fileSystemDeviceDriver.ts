@@ -5,10 +5,18 @@
 namespace TSOS {
   // A block terminates a linked list of pointers if it points to itself
   export class FileSystemDeviceDriver extends DeviceDriver {
-    // I need to keep track of empty spaces on disk...
+    private isFormatted: boolean = false;
+
+    private checkFormatted(): boolean {
+      if (!this.isFormatted) {
+        _StdOut.putText(
+          `Looks like the disk is not formatted yet. Please use 'format' to do so.`
+        );
+      }
+      return this.isFormatted;
+    }
 
     // (0,0,0) is the master boot record
-    // (0,0,1-7) are reserved for file names
     constructor(
       readonly disk: Disk,
       readonly numTracks: number = 3,
@@ -53,8 +61,12 @@ namespace TSOS {
     }
 
     private onCreate(params: any[]) {
+      if (!this.checkFormatted()) {
+        return;
+      }
+      _StdOut.putText(`Creating file ${params[0]}...`);
       this.createFile(params[0]);
-      _StdOut.putText(`Wrote file ${params[0]} to disk.`);
+      _StdOut.putText(`Created file ${params[0]}.`);
     }
 
     private createFile(filename: string) {
@@ -79,7 +91,7 @@ namespace TSOS {
         .allLocationsAndContents()
         .map(kv => FileSystemBlock.deserialize(kv.location, kv.contents))
         .filter(b => b.getState() === BlockState.AVAILABLE)
-        .filter(b => b.location.equals(new DiskLocation(0, 0, 0))); // ignore boot block
+        .filter(b => !b.location.equals(new DiskLocation(0, 0, 0))); // ignore boot block
       return this.availableLocations;
     }
 
@@ -95,6 +107,7 @@ namespace TSOS {
         )
       );
       this.findAvailableBlocks();
+      this.isFormatted = true;
     }
     writeRaw(block: FileSystemBlock): void {
       this.disk.write(block.location, block.serialize());

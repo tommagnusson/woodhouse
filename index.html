@@ -115,6 +115,14 @@
         >
           Reset
         </button>
+        <button
+          type="button"
+          id="btnDiskReset"
+          class="btn btn-warning"
+          onclick="if(confirm('Clear session storage?')) sessionStorage.clear() || TSOS.Control.displayDisk(_Disk)"
+        >
+          Reset Disk
+        </button>
       </div>
 
       <div id="singleStep" style="display:flex">
