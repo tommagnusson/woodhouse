@@ -3,12 +3,12 @@ namespace TSOS {
     // represents a disk... you know, like for a hard drive.
 
     public read(location: DiskLocation) {
-      return sessionStorage.getItem(location.toString());
+      return sessionStorage.getItem(location.toByteString());
     }
 
     public write(location: DiskLocation, value: string) {
       this.checkValueLength(value);
-      sessionStorage.setItem(location.toString(), value);
+      sessionStorage.setItem(location.toByteString(), value);
     }
 
     private checkValueLength(value: string) {
@@ -47,6 +47,15 @@ namespace TSOS {
         '(' +
         [this.track, this.sector, this.block].map(i => i.toString()).join(',') +
         ')'
+      );
+    }
+
+    public equals(l: DiskLocation) {
+      return (
+        (!this && !l) ||
+        (this.track === l.track &&
+          this.sector === l.sector &&
+          this.block === l.block)
       );
     }
   }

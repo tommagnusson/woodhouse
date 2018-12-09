@@ -366,7 +366,7 @@ namespace TSOS {
         const $tr = document.createElement(`tr`);
         const $th = document.createElement(`th`);
         $th.setAttribute(`scope`, `row`);
-        $th.textContent = lc.location;
+        $th.textContent = `(${lc.location.split('').join(',')})`;
         const $td = document.createElement(`td`);
         $td.setAttribute(`id`, `location${lc.location}`);
         $td.textContent = lc.contents;

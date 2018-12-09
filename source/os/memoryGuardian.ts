@@ -23,7 +23,6 @@ namespace TSOS {
         this.segments.push(newSegment);
         this.segmentToIsOccupied.set(newSegment, false);
       }
-      console.log("created new segment", this);
     }
 
     public evacuate(process?: ProcessControlBlock) {
@@ -36,7 +35,7 @@ namespace TSOS {
         const limit = p.occupiedSegment.limit;
 
         for (let i = parseInt(base, 16); i <= parseInt(limit, 16); i++) {
-          _Memory.write(i.toString(16), "00");
+          _Memory.write(i.toString(16), '00');
         }
         Control.displayMemory(this.memory.dangerouslyExposeRaw());
         this.segmentToIsOccupied.set(p.occupiedSegment, false);
@@ -51,7 +50,7 @@ namespace TSOS {
       const firstAvailableSegment = Array.from(
         this.segmentToIsOccupied.keys()
       ).find(segment => !this.segmentToIsOccupied.get(segment));
-      console.log("first available", firstAvailableSegment);
+      console.log('first available', firstAvailableSegment);
 
       if (firstAvailableSegment === undefined) {
         throw new Error(`There is not enough memory to load a new program.`);
@@ -142,7 +141,7 @@ namespace TSOS {
     // converts a valid program to an array of hex strings
     public static parseProgram(program: string): Array<string> {
       // strip whitespace
-      program = program.replace(/\s/g, "");
+      program = program.replace(/\s/g, '');
 
       const hexes = [];
 

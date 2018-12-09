@@ -213,6 +213,14 @@ namespace TSOS {
         )
       );
 
+      this.commandList.push(
+        new ShellCommand(
+          this.shellCreate,
+          'create',
+          '"<filename>"- creates a new file with the given file name.'
+        )
+      );
+
       //
       // Display the initial prompt.
       this.putPrompt();
@@ -605,15 +613,37 @@ namespace TSOS {
       _StdOut.putText(`Formatting disk...`);
     };
     public shellCreate = args => {
-      const [fileName, ...ignored] = args;
-      // doesn't start with .
-      if (fileName.startsWith(`.`)) {
-        // user trying to create a swap file, ignore
+      const [fileName] = args;
+      if (
+        !fileName ||
+        fileName.length <= 2 ||
+        fileName.charAt(0) !== `"` ||
+        fileName.charAt(fileName.length - 1) !== `"`
+      ) {
         _StdOut.putText(
-          `Terribly sorry, I'm afraid I cannot let you create a file that starts with a dot: ${fileName}`
+          `Please provide a file name in quotations, not: ${fileName}`
         );
         return;
       }
+      const unquotedFileName = fileName.substring(1, fileName.length - 1);
+
+      // doesn't start with .
+      if (unquotedFileName.startsWith(`.`)) {
+        // user trying to create a swap file, ignore
+        _StdOut.putText(
+          `Terribly sorry, I'm afraid I cannot let you create a file that starts with a dot: ${unquotedFileName}`
+        );
+        return;
+      }
+      console.log(
+        `attempting to create a file with filename: ${unquotedFileName}`
+      );
+      _KernelInterruptQueue.enqueue(
+        new Interrupt(IRQ.FILE_SYSTEM_IRQ, [
+          FileSystemInterrupts.CREATE,
+          unquotedFileName
+        ])
+      );
     };
   }
 }
