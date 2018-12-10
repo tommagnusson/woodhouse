@@ -35,6 +35,10 @@ namespace TSOS {
       return this.q[this.q.length - 1];
     }
 
+    public peekFirst() {
+      return this.q[0];
+    }
+
     public pop() {
       const popped = this.q.pop();
       return popped ? popped : null;

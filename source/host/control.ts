@@ -257,8 +257,13 @@ namespace TSOS {
         pcbPID: pcb.pid.toString(),
         pcbState: pcb.status,
         pcbPriority: pcb.priority,
-        pcbBase: pcb.occupiedSegment.base.toString(),
-        pcbLimit: pcb.occupiedSegment.limit.toString(),
+        pcbLocation: pcb.location,
+        pcbBase: pcb.occupiedSegment
+          ? pcb.occupiedSegment.base.toString()
+          : '-',
+        pcbLimit: pcb.occupiedSegment
+          ? pcb.occupiedSegment.limit.toString()
+          : '-',
         pcbInstruction: pcb.instruction ? pcb.instruction.code || '--' : '--',
         pcbCounter: pcb.programCounter.toString(),
         pcbAccumulator: pcb.accumulator.toString(),
@@ -290,8 +295,13 @@ namespace TSOS {
         pcbPID: pcb.pid.toString(),
         pcbState: pcb.status,
         pcbPriority: pcb.priority,
-        pcbBase: pcb.occupiedSegment.base.toString(),
-        pcbLimit: pcb.occupiedSegment.limit.toString(),
+        pcbLocation: pcb.location,
+        pcbBase: pcb.occupiedSegment
+          ? pcb.occupiedSegment.base.toString()
+          : '-',
+        pcbLimit: pcb.occupiedSegment
+          ? pcb.occupiedSegment.limit.toString()
+          : '-',
         pcbInstruction: pcb.instruction ? pcb.instruction.code || '--' : '--',
         pcbCounter: pcb.programCounter.toString(),
         pcbAccumulator: pcb.accumulator.toString(),

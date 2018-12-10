@@ -241,6 +241,7 @@ namespace TSOS {
         );
 
         this.krnDisplayMemory();
+        Control.displayDisk(_Disk);
       } catch (err) {
         _StdOut.putSysTextLn(err.message);
       }

@@ -39,11 +39,15 @@ namespace TSOS {
       return true;
     }
 
+    private nextPID = 0;
+
     public requestResidency(
       program: string,
       priority: number
     ): ProcessControlBlock {
-      const process = _MemoryGuardian.load(program);
+      const process = _MemoryGuardian.isFull()
+        ? _krnFileSystemDriver.load(program, this.nextPID++)
+        : _MemoryGuardian.load(program, this.nextPID++);
       process.status = 'resident';
       process.priority = priority;
       this.residentMap.set(process.pid, process);
@@ -60,7 +64,6 @@ namespace TSOS {
       this.readyQueue.setShouldPrioritize(
         this.scheduleType.activeType === 'priority'
       );
-      console.log(this.scheduleType.activeType);
       if (!this.executing) {
         this.readyToExecuting();
         if (this.executing === null) {
@@ -71,6 +74,8 @@ namespace TSOS {
     }
 
     public requestCPUExecution(pid: number): boolean {
+      // check both memory and disk
+
       if (this.residentToReady(pid) === null) {
         return false;
       }
@@ -126,12 +131,39 @@ namespace TSOS {
       return [...[this.executing].filter(pcb => pcb), ...this.readyQueue.q];
     }
 
+    // should automatically roll disk <-> memory
     private readyToExecuting(): ProcessControlBlock {
       if (this.readyQueue.isEmpty()) {
         return null;
       }
       this.executing = this.readyQueue.dequeue();
       this.executing.status = 'running';
+
+      if (this.executing.location === 'disk') {
+        // we need to get it into memory somehow...
+        // check available space in memory...
+        if (_MemoryGuardian.isFull()) {
+          // find first pcb not on disk starting from end of ready q (to avoid constant rolls)...
+          let candidate: ProcessControlBlock = undefined;
+
+          for (let i = this.readyQueue.q.length - 1; i >= 0; i--) {
+            console.log(this.readyQueue);
+            if (this.readyQueue.q[i].location === 'memory') {
+              candidate = this.readyQueue.q[i];
+              break;
+            }
+          }
+          // notice "victim" vs "candidate" :)
+          // roll out from memory onto disk
+          const { victim, program } = _MemoryGuardian.dequeDiskCandidate(
+            candidate
+          );
+          _krnFileSystemDriver._load(program, victim);
+        }
+        // roll into memory
+        const contents = _krnFileSystemDriver.deleteSwap(this.executing.pid);
+        _MemoryGuardian.loadFromPCB(this.executing, contents);
+      }
       return this.executing;
     }
   }

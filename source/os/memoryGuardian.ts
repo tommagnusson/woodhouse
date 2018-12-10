@@ -7,7 +7,6 @@ namespace TSOS {
   export class MemoryGuardian {
     static readonly NUM_SEGMENTS = 3;
 
-    private currentPID = 0;
     public processes: Map<number, ProcessControlBlock> = new Map();
     public segmentToIsOccupied: Map<Segment, boolean> = new Map();
     public segments: Array<Segment> = [];
@@ -23,6 +22,29 @@ namespace TSOS {
         this.segments.push(newSegment);
         this.segmentToIsOccupied.set(newSegment, false);
       }
+    }
+
+    public isFull(): boolean {
+      return Array.from(this.segmentToIsOccupied.values()).every(
+        isOccupied => isOccupied
+      );
+    }
+
+    public loadFromPCB(
+      process: ProcessControlBlock,
+      program: string
+    ): ProcessControlBlock {
+      if (this.isFull()) {
+        throw new Error(
+          `Tried to load process ${
+            process.pid
+          } into memory but there wasn't room.`
+        );
+      }
+      const segment = this._load(MemoryGuardian.parseProgram(program));
+      process.occupiedSegment = segment;
+      process.location = 'memory';
+      return process;
     }
 
     public evacuate(process?: ProcessControlBlock) {
@@ -43,9 +65,39 @@ namespace TSOS {
       }
     }
 
-    public load(program: string): ProcessControlBlock {
-      const parsedProgram = MemoryGuardian.parseProgram(program);
+    // picks the next "candidate" to remove from memory
+    public dequeDiskCandidate(
+      candidate: ProcessControlBlock
+    ): { victim: ProcessControlBlock; program: string } {
+      const actualCandidate = this.processes.get(candidate.pid);
+      if (!actualCandidate) {
+        console.log(this);
+        throw new Error(
+          `Tried to deque a disk candidate with pid ${
+            candidate.pid
+          } that is not in memory.`
+        );
+      }
+      const program = this.getProgram(actualCandidate.occupiedSegment);
+      // free its segment..
+      this.segmentToIsOccupied.set(actualCandidate.occupiedSegment, false);
+      actualCandidate.occupiedSegment = null;
+      actualCandidate.location = undefined; // TODO: maybe bites me?
+      this.processes.delete(actualCandidate.pid);
 
+      return { victim: actualCandidate, program };
+    }
+
+    // reads a program out of memory
+    private getProgram(segment: Segment): string {
+      let program = '';
+      for (let i = parseInt(segment.base); i < parseInt(segment.limit); i++) {
+        program.concat(this.read(i.toString(16)));
+      }
+      return program;
+    }
+
+    private _load(parsedProgram: string[]) {
       // find the first available segment from memory
       const firstAvailableSegment = Array.from(
         this.segmentToIsOccupied.keys()
@@ -69,14 +121,17 @@ namespace TSOS {
       Control.displayMemory(this.memory.dangerouslyExposeRaw());
       // mark the segment as occupied
       this.segmentToIsOccupied.set(firstAvailableSegment, true);
+      return firstAvailableSegment;
+    }
+
+    public load(program: string, pid: number): ProcessControlBlock {
+      const parsedProgram = MemoryGuardian.parseProgram(program);
+
+      const firstAvailableSegment = this._load(parsedProgram);
 
       // map the PID to the PCB
-      const newProcess = new ProcessControlBlock(
-        this.currentPID,
-        firstAvailableSegment
-      );
-      this.processes.set(this.currentPID, newProcess);
-      this.currentPID++;
+      const newProcess = new ProcessControlBlock(pid, firstAvailableSegment);
+      this.processes.set(pid, newProcess);
       return newProcess;
     }
 

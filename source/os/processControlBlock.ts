@@ -15,6 +15,7 @@ namespace TSOS {
     public accumulator = 0;
     public fresh = false; // boolean representing if the pcb is meant to be deserialized
     public priority = Infinity;
+    public location = 'memory'; // disk | memory
 
     public cyclesInReady = 0;
     public cyclesExecuting = 0;

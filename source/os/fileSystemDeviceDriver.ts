@@ -1,6 +1,7 @@
 ///<reference path="../globals.ts" />
 ///<reference path="deviceDriver.ts" />
 ///<reference path="../host/Disk.ts" />
+///<reference path="./processControlBlock.ts"/>
 
 namespace TSOS {
   // A block terminates a linked list of pointers if it points to itself
@@ -65,6 +66,52 @@ namespace TSOS {
           `Invalid File System Interrupt Request. fsirq=${fsIRQ} params=[${fsParams}]`
         );
       }
+    }
+
+    public static deriveSwapFileName(pid: number) {
+      return `.swap${pid}`;
+    }
+
+    // pids of processes that have active swap files
+    public activeSwapFiles: number[] = [];
+
+    // load a program (hex string) to a temp swap file
+    public _load(
+      program: string,
+      process: ProcessControlBlock
+    ): ProcessControlBlock {
+      // 1 create the swap file - .swapN where N is the pid
+      const fileName = FileSystemDeviceDriver.deriveSwapFileName(process.pid);
+      this.createFile(fileName);
+
+      // 2 write program to the swap file
+      this.appendToFile(fileName, program);
+
+      // 3 keep track of active swap files
+      this.activeSwapFiles.push(process.pid);
+
+      // 4 create the process control block
+      process.location = 'disk';
+      return process;
+    }
+
+    public load(program: string, pid: number): ProcessControlBlock {
+      const pcb = new ProcessControlBlock(pid, null);
+      return this._load(program, pcb);
+    }
+
+    public deleteSwap(pid: number) {
+      const fileName = FileSystemDeviceDriver.deriveSwapFileName(pid);
+      if (!this.activeSwapFiles.some(f => f === pid)) {
+        throw new Error(
+          `Tried to delete the swap file for pid ${pid} that doesn't exist. Active swaps: ${
+            this.activeSwapFiles
+          }`
+        );
+      }
+      const contents = this.readFile(fileName);
+      this.deleteFile(fileName);
+      return contents;
     }
 
     private onFormat(params: any[]) {
