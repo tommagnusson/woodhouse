@@ -699,6 +699,7 @@ namespace TSOS {
       const [fileName] = args;
       if (!_krnFileSystemDriver.ls().some(f => f === fileName)) {
         _StdOut.putText(`Please enter a valid file, not: ${fileName}`);
+        return;
       }
       _KernelInterruptQueue.enqueue(
         new Interrupt(IRQ.FILE_SYSTEM_IRQ, [

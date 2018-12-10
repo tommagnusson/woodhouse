@@ -135,15 +135,15 @@ namespace TSOS {
         // save the file
         this.writeRaw(theFile);
         this.appendToBlock(available, stringData);
-      }
-      const firstContentfulBlock = FileSystemBlock.loadFromLocation(
-        theFile.getPointer()
-      );
+      } else {
+        const firstContentfulBlock = theFile.getBlockFromPointer();
 
-      this.appendToBlock(firstContentfulBlock, stringData);
+        this.appendToBlock(firstContentfulBlock, stringData);
+      }
     }
 
     private appendToBlock(block: FileSystemBlock, stringData: string) {
+      console.log('append to block');
       const remainingStringData = block.appendStringContent(stringData);
 
       // base case, wrote everything sucessfully
@@ -339,7 +339,9 @@ namespace TSOS {
     public getCharHexContent(): string {
       return this.byteContents.substring(
         0,
-        _.chunk(this.byteContents, 2).findIndex(byte => byte === ['00'])
+        _.chunk(this.byteContents, 2).findIndex(
+          byte => byte[0] === '0' && byte[1] === '0'
+        ) * 2
       );
     }
 
@@ -348,7 +350,17 @@ namespace TSOS {
     public appendStringContent(stringContent: string): string {
       const remainingRoom = 60 - this.getCharHexContent().length;
       const appendCharHex = FileSystemBlock.stringToCharHex(stringContent);
-      if (remainingRoom <= appendCharHex.length) {
+      if (remainingRoom >= appendCharHex.length) {
+        console.log(
+          'hex content concat',
+          this.getCharHexContent().concat(appendCharHex)
+        );
+        console.log(
+          'set to',
+          this.getCharHexContent(),
+          appendCharHex,
+          this.getCharHexContent().concat(appendCharHex)
+        );
         this.setHexByteContent(this.getCharHexContent().concat(appendCharHex));
         return '';
       } else {
