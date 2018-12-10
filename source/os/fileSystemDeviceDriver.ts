@@ -316,6 +316,12 @@ namespace TSOS {
         .map(b => b.getStringContent())
         .filter(n => !n.startsWith('.'));
     }
+    public lsHidden(): string[] {
+      return this.fileNameBlocks()
+        .filter(b => b.getState() === BlockState.OCCUPIED)
+        .map(b => b.getStringContent())
+        .filter(n => n.startsWith('.'));
+    }
   }
 
   // === BEGIN FILE SYSTEM BLOCK ===

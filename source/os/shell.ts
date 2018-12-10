@@ -678,10 +678,10 @@ namespace TSOS {
       }
 
       // doesn't start with .
-      if (fileName.startsWith(`.`)) {
+      if (fileName.startsWith(`.swap`)) {
         // user trying to create a swap file, ignore
         _StdOut.putText(
-          `Terribly sorry, I'm afraid I cannot let you create a file that starts with a dot: ${fileName}`
+          `Terribly sorry, I'm afraid I cannot let you create a file that starts with '.swap': ${fileName}`
         );
         return;
       }
@@ -694,8 +694,12 @@ namespace TSOS {
     };
 
     public shellLS = args => {
+      const [maybeL] = args;
+      const showHidden = maybeL && maybeL === '-l';
       // get all files that don't start with .
-      const files = _krnFileSystemDriver.ls();
+      const files = _krnFileSystemDriver
+        .ls()
+        .concat(showHidden ? _krnFileSystemDriver.lsHidden() : []);
       if (files.length === 0) {
         _StdOut.putText(`No files to show.`);
       } else {
