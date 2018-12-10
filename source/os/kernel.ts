@@ -212,8 +212,8 @@ namespace TSOS {
       // stop execution
       if (_Scheduler.requestGracefulTermination(pid)) {
         _StdOut.putText(message);
-        _StdOut.putText(`Wait time: ${waitTime}`);
-        _StdOut.putText(`Turnaround time: ${turnaroundTime}`);
+        _StdOut.putText(` Wait time: ${waitTime}`);
+        _StdOut.putText(` Turnaround time: ${turnaroundTime}`);
       } else {
         _StdOut.putText(`Process ${pid} could not be gracefully terminated.`);
       }

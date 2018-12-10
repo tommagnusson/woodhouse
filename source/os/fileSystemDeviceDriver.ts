@@ -125,6 +125,7 @@ namespace TSOS {
       }
       _StdOut.putText(`Creating file ${params[0]}...`);
       this.createFile(params[0]);
+      _StdOut.putText(`Created file ${params[0]}.`);
     }
 
     private onWrite(params: any[]) {
@@ -266,7 +267,6 @@ namespace TSOS {
       available.setStringContent(filename);
       this.writeRaw(available);
       this.files.push(available);
-      _StdOut.putText(`Created file ${filename}.`);
     }
 
     driverEntry() {
