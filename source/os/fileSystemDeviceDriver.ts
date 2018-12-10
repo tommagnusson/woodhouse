@@ -52,6 +52,9 @@ namespace TSOS {
         },
         [FileSystemInterrupts.READ]: () => {
           this.onRead(fsParams);
+        },
+        [FileSystemInterrupts.DELETE]: () => {
+          this.onDelete(fsParams);
         }
       };
       const maybeFn = fsInterrupts[fsIRQ];
@@ -83,6 +86,7 @@ namespace TSOS {
       }
       const [fileName, stringData] = params;
       this.appendToFile(fileName, stringData);
+      _StdOut.putText(`Wrote ${stringData} to ${fileName}`);
     }
 
     private onRead(params: any[]) {
@@ -92,6 +96,33 @@ namespace TSOS {
       const [filename] = params;
       _StdOut.putText(`Contents of ${filename}: `);
       _StdOut.putText(this.readFile(filename));
+    }
+
+    private onDelete(params: any[]) {
+      if (!this.checkFormatted()) {
+        return;
+      }
+      const [filename] = params;
+      this.deleteFile(filename);
+      _StdOut.putText(`Deleted ${filename}.`);
+    }
+
+    private deleteFile(fileName: string) {
+      const theFile = this.findFile(fileName);
+      this.recursiveDelete(theFile);
+    }
+
+    private recursiveDelete(file: FileSystemBlock) {
+      file.setState(BlockState.AVAILABLE);
+      this.writeRaw(file);
+      this.availableLocations.push(file); // add to cache :)
+
+      // base case: file terminus, all others should be deleted by now
+      if (file.isFileTerminus()) {
+        return;
+      }
+      // go on to delete the next one
+      this.recursiveDelete(file.getBlockFromPointer());
     }
 
     private readFile(fileName: string): string {
@@ -131,6 +162,7 @@ namespace TSOS {
         }
 
         available.reset();
+        available.setState(BlockState.OCCUPIED);
         theFile.setPointer(available.location);
         // save the file
         this.writeRaw(theFile);
@@ -448,7 +480,8 @@ namespace TSOS {
     FORMAT,
     CREATE,
     WRITE,
-    READ
+    READ,
+    DELETE
   }
 
   export enum BlockState {

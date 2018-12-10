@@ -240,6 +240,14 @@ namespace TSOS {
         )
       );
 
+      this.commandList.push(
+        new ShellCommand(
+          this.shellDelete,
+          'delete',
+          '<file name> - delete the given file.'
+        )
+      );
+
       //
       // Display the initial prompt.
       this.putPrompt();
@@ -704,6 +712,20 @@ namespace TSOS {
       _KernelInterruptQueue.enqueue(
         new Interrupt(IRQ.FILE_SYSTEM_IRQ, [
           FileSystemInterrupts.READ,
+          fileName
+        ])
+      );
+    };
+
+    public shellDelete = args => {
+      const [fileName] = args;
+      if (!_krnFileSystemDriver.ls().some(f => f === fileName)) {
+        _StdOut.putText(`Please enter a valid file, not: ${fileName}`);
+        return;
+      }
+      _KernelInterruptQueue.enqueue(
+        new Interrupt(IRQ.FILE_SYSTEM_IRQ, [
+          FileSystemInterrupts.DELETE,
           fileName
         ])
       );
