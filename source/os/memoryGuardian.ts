@@ -44,6 +44,7 @@ namespace TSOS {
       const segment = this._load(MemoryGuardian.parseProgram(program));
       process.occupiedSegment = segment;
       process.location = 'memory';
+      this.processes.set(process.pid, process);
       return process;
     }
 
