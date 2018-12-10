@@ -7,6 +7,9 @@ namespace TSOS {
     private currentQuantum = 0;
     private lastPidExecuted = null;
 
+    // 'rr' | 'fcfs' | 'priority'
+    public activeType = 'rr';
+
     constructor() {}
 
     public didCycle(pid: number) {

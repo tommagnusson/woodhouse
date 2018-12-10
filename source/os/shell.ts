@@ -248,6 +248,21 @@ namespace TSOS {
         )
       );
 
+      this.commandList.push(
+        new ShellCommand(
+          this.shellSetSchedule,
+          'setschedule',
+          '[rr = default | fcfs | priority] - sets schedule type'
+        )
+      );
+      this.commandList.push(
+        new ShellCommand(
+          this.shellGetSchedule,
+          'getschedule',
+          '- gets the current schedule type.'
+        )
+      );
+
       //
       // Display the initial prompt.
       this.putPrompt();
@@ -729,6 +744,25 @@ namespace TSOS {
           fileName
         ])
       );
+    };
+
+    public shellGetSchedule = args => {
+      _StdOut.putText(
+        `Active scheduling algorithm: ${_Scheduler.scheduleType.activeType}`
+      );
+    };
+
+    public shellSetSchedule = args => {
+      const algos = ['rr', 'fcfs', 'priority'];
+      const [algo] = args;
+      if (!algos.some(a => a === algo)) {
+        _StdOut.putText(
+          `${algo} is not a valid algorithm. Try ${algos.join(' or ')}`
+        );
+        return;
+      }
+      _Scheduler.scheduleType.activeType = algo;
+      _StdOut.putText(`Set scheduling to ${algo}.`);
     };
   }
 }
