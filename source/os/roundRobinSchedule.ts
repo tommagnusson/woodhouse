@@ -24,6 +24,9 @@ namespace TSOS {
     }
 
     public shouldContextSwitch(): boolean {
+      if (this.activeType === 'fcfs') {
+        return false;
+      }
       return this.currentQuantum === RoundRobinSchedule.quantum;
     }
   }

@@ -19,7 +19,7 @@ namespace TSOS {
       return this.q.length == 0;
     }
 
-    public enqueue(element) {
+    public enqueue(element: T) {
       this.q.push(element);
     }
 
@@ -41,11 +41,36 @@ namespace TSOS {
     }
 
     public toString() {
-      var retVal = '';
-      for (var i in this.q) {
-        retVal += '[' + this.q[i] + '] ';
+      return `[${this.q.join(', ')}]`;
+    }
+  }
+
+  export interface Prioritizable {
+    priority: number;
+  }
+
+  export class PriorityQueue<T extends Prioritizable> extends Queue<T> {
+    public shouldPrioritize = true;
+
+    constructor(public q: T[] = []) {
+      super(q);
+    }
+
+    private determinePriority = (a, b) => a.priority - b.priority;
+
+    public enqueue(element: T) {
+      super.enqueue(element);
+      if (this.shouldPrioritize) {
+        // keep it sorted by priority
+        this.q.sort(this.determinePriority);
       }
-      return retVal;
+    }
+
+    public setShouldPrioritize(shouldPrioritize: boolean) {
+      this.shouldPrioritize = shouldPrioritize;
+      if (this.shouldPrioritize) {
+        this.q.sort(this.determinePriority);
+      }
     }
   }
 }

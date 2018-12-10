@@ -5,7 +5,9 @@
 namespace TSOS {
   export class Scheduler {
     readonly terminatedQueue: Queue<ProcessControlBlock> = new Queue();
-    readonly readyQueue: Queue<ProcessControlBlock> = new Queue();
+    readonly readyQueue: PriorityQueue<
+      ProcessControlBlock
+    > = new PriorityQueue();
 
     readonly residentMap: Map<number, ProcessControlBlock> = new Map();
     public executing: ProcessControlBlock = null;
@@ -54,6 +56,11 @@ namespace TSOS {
     }
 
     public next() {
+      // todo: maybe optimize, requires resort every clock cycle...
+      this.readyQueue.setShouldPrioritize(
+        this.scheduleType.activeType === 'priority'
+      );
+      console.log(this.scheduleType.activeType);
       if (!this.executing) {
         this.readyToExecuting();
         if (this.executing === null) {

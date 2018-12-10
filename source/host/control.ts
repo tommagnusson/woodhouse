@@ -256,6 +256,7 @@ namespace TSOS {
       const pcbDisplayIdToValue = {
         pcbPID: pcb.pid.toString(),
         pcbState: pcb.status,
+        pcbPriority: pcb.priority,
         pcbBase: pcb.occupiedSegment.base.toString(),
         pcbLimit: pcb.occupiedSegment.limit.toString(),
         pcbInstruction: pcb.instruction ? pcb.instruction.code || '--' : '--',
@@ -270,7 +271,9 @@ namespace TSOS {
         const $data = document.querySelector(
           `.table [data-pid="${pcb.pid}"] .${key}`
         );
-        $data.textContent = pcbDisplayIdToValue[key].toUpperCase();
+        const value = pcbDisplayIdToValue[key];
+        $data.textContent =
+          typeof value !== 'number' ? value.toUpperCase() : value;
       }
     }
 
@@ -286,6 +289,7 @@ namespace TSOS {
       const pcbDisplayIdToValue = {
         pcbPID: pcb.pid.toString(),
         pcbState: pcb.status,
+        pcbPriority: pcb.priority,
         pcbBase: pcb.occupiedSegment.base.toString(),
         pcbLimit: pcb.occupiedSegment.limit.toString(),
         pcbInstruction: pcb.instruction ? pcb.instruction.code || '--' : '--',
@@ -298,7 +302,9 @@ namespace TSOS {
       for (let key of Object.keys(pcbDisplayIdToValue)) {
         const $data = document.createElement(`td`);
         $data.classList.add(key);
-        $data.textContent = pcbDisplayIdToValue[key].toUpperCase();
+        const value = pcbDisplayIdToValue[key];
+        $data.textContent =
+          typeof value !== 'number' ? value.toUpperCase() : value;
         $row.appendChild($data);
       }
       document.querySelector(`.pcb .table tbody`).appendChild($row);
