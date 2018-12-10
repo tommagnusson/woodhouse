@@ -192,15 +192,6 @@ A9 00 8D 7B 00 A9 00 8D 7B 00 A9 00 8D 7C 00 A9 00 8D 7C 00 A9 01 8D 7A 00 A2 00
                 FF 00 00 00 00 61 00 61 64 6F 6E 65 00</textarea
           >
         </div>
-      </div>
-      <div class="right">
-        <label class="text-light">Memory</label>
-        <div class="memory">
-          <table class="table table-dark">
-            <tbody></tbody>
-          </table>
-        </div>
-
         <div class="cpu-group">
           <label class="text-light">CPU</label>
           <div class="cpu">
@@ -215,17 +206,27 @@ A9 00 8D 7B 00 A9 00 8D 7B 00 A9 00 8D 7C 00 A9 00 8D 7C 00 A9 01 8D 7A 00 A2 00
               </thead>
               <tbody>
                 <tr scope="row">
-                  <td id="cpuCounter"></td>
-                  <td id="cpuInstruction"></td>
-                  <td id="cpuAccumulator"></td>
-                  <td id="cpuX"></td>
-                  <td id="cpuY"></td>
-                  <td id="cpuZ"></td>
+                  <td id="cpuCounter">-</td>
+                  <td id="cpuInstruction">--</td>
+                  <td id="cpuAccumulator">-</td>
+                  <td id="cpuX">-</td>
+                  <td id="cpuY">-</td>
+                  <td id="cpuZ">-</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
+      </div>
+
+      <div class="right">
+        <label class="text-light">Memory</label>
+        <div class="memory">
+          <table class="table table-dark">
+            <tbody></tbody>
+          </table>
+        </div>
+
         <label class="text-light">Disk</label>
         <div class="disk">
           <table class="table table-dark">
@@ -233,7 +234,7 @@ A9 00 8D 7B 00 A9 00 8D 7B 00 A9 00 8D 7C 00 A9 00 8D 7C 00 A9 01 8D 7A 00 A2 00
           </table>
         </div>
       </div>
-      <div class="pcb-group" style="grid-column: 2">
+      <div class="pcb-group" style="grid-column: 2 / span 2">
         <label class="text-light">Process Control Blocks</label>
         <div class="pcb">
           <table class="table table-light text-dark text-center">

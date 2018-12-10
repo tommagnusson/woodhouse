@@ -657,6 +657,12 @@ namespace TSOS {
     };
 
     public shellFormat = args => {
+      if (_Scheduler.executing || _Scheduler.hasNext()) {
+        _StdOut.putText(
+          `Terribly sorry, I can't format while programs are running.`
+        );
+        return;
+      }
       // interrupts within interrupts my dude
       _KernelInterruptQueue.enqueue(
         new Interrupt(IRQ.FILE_SYSTEM_IRQ, [FileSystemInterrupts.FORMAT, []])

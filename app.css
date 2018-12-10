@@ -80,7 +80,7 @@ nav > *:not(:first-child) {
 
 .memory,
 .disk {
-  height: 240px;
+  height: 234px;
   overflow-y: scroll;
   padding: 2px;
   border: 1px solid white;
@@ -91,5 +91,5 @@ nav > *:not(:first-child) {
 }
 
 .cpu-group {
-  margin-top: 27px;
+  margin-top: 10px;
 }
