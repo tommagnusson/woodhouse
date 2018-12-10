@@ -37,9 +37,13 @@ namespace TSOS {
       return true;
     }
 
-    public requestResidency(program: string): ProcessControlBlock {
+    public requestResidency(
+      program: string,
+      priority: number
+    ): ProcessControlBlock {
       const process = _MemoryGuardian.load(program);
       process.status = 'resident';
+      process.priority = priority;
       this.residentMap.set(process.pid, process);
       return process;
     }

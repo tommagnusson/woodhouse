@@ -147,7 +147,7 @@ namespace TSOS {
           Control.displayDisk(_Disk);
         },
         [IRQ.LOAD_PROGRAM_IRQ]: () => {
-          this.onLoadProgram(params[0]);
+          this.onLoadProgram(params[0], params[1]);
         },
         [IRQ.RUN_PROGRAM_IRQ]: () => {
           this.onRunProgram(params[0]);
@@ -233,10 +233,12 @@ namespace TSOS {
       this.stopRunningProgram(`Process ${pid} exited with status code 0.`, pid);
     }
 
-    private onLoadProgram(program: string) {
+    private onLoadProgram(program: string, priority: number) {
       try {
-        const process = _Scheduler.requestResidency(program);
-        _StdOut.putSysTextLn(`Process created with PID ${process.pid}`);
+        const process = _Scheduler.requestResidency(program, priority);
+        _StdOut.putSysTextLn(
+          `Process created with PID ${process.pid} and priority ${priority}`
+        );
 
         this.krnDisplayMemory();
       } catch (err) {

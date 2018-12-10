@@ -143,7 +143,7 @@ namespace TSOS {
         new ShellCommand(
           this.shellLoad,
           'load',
-          '- Loads a user program from the input area.'
+          '<priority 0-8>? - Loads a user program from the input area.'
         )
       );
 
@@ -573,11 +573,20 @@ namespace TSOS {
     };
 
     private shellLoad = args => {
+      const [maybePriority] = args;
+      const priority = maybePriority ? parseInt(maybePriority) : undefined;
+      if (priority < 0 || priority > 8) {
+        _StdOut.putText(`Priority ${priority} is out of the range of [0, 8].`);
+        return;
+      }
       const program = _ProgramInput.value;
       if (this.isValidProgram(program)) {
         _StdOut.putText('Nice program you have there.');
         _KernelInterruptQueue.enqueue(
-          new Interrupt(IRQ.LOAD_PROGRAM_IRQ, [program])
+          new Interrupt(IRQ.LOAD_PROGRAM_IRQ, [
+            program,
+            priority === 0 ? priority : priority || Infinity
+          ])
         );
       } else {
         // error message

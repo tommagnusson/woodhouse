@@ -14,6 +14,7 @@ namespace TSOS {
     public instruction: OpCode;
     public accumulator = 0;
     public fresh = false; // boolean representing if the pcb is meant to be deserialized
+    public priority = Infinity;
 
     public cyclesInReady = 0;
     public cyclesExecuting = 0;
